@@ -17,14 +17,13 @@
 <gap:platform name="android" />
 
 <!-- should be okay -->
-<!--
 <gap:plugin name="cordova-plugin-whitelist" source="npm" />
 <gap:plugin name="cordova-plugin-fullscreen" source="npm" />
 <plugin name="cordova-plugin-inappbrowser" source="npm" />
 <plugin name="cordova-plugin-media" source="npm" spec="1.0.1" />
 <plugin name="cordova-plugin-network-information" source="npm" spec="1.0.1" />
 <plugin name="cordova-plugin-contacts" source="npm" spec="2.2.0" />
--->
+
 
 <!-- known bad - update
 <plugin name="cordova-plugin-contacts" spec="1.1.0" source="pgb" />
