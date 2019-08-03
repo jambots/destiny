@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+    <widget xmlns = "http://www.w3.org/ns/widgets"
+        xmlns:gap = "http://phonegap.com/ns/1.0"
+        xmlns:android = "http://schemas.android.com/apk/res/android"
+        id        = "com.pixiedustapps.whatsmydestiny"
+        versionCode="14"
+        version   = "2.4">
+
+    <!-- versionCode is optional and Android only -->
+<preference name="phonegap-version" value="cli-9.0.0" />
+<preference name="android-targetSdkVersion" value="28" />
+<preference name="AndroidPersistentFileLocation" value="Compatibility" />
+<preference name="webviewbounce" value="false" />
+<name>What's My Destiny?</name>
+<description>Wes Hamilton Numerology</description>
+<gap:platform name="ios" />
+<gap:platform name="android" />
+
+<!-- should be okay -->
+<gap:plugin name="cordova-plugin-whitelist" source="npm" />
+<gap:plugin name="cordova-plugin-fullscreen" source="npm" />
+<plugin name="cordova-plugin-inappbrowser" source="npm" />
+<plugin name="cordova-plugin-media" source="npm" spec="1.0.1" />
+<plugin name="cordova-plugin-network-information" source="npm" spec="1.0.1" />
+<plugin name="cordova-plugin-contacts" source="npm" spec="2.2.0" />
+
+
+<!-- known bad - update
+<plugin name="cordova-plugin-contacts" spec="1.1.0" source="pgb" />
+<gap:plugin name="hu.dpal.phonegap.plugins.uniquedeviceid" version="1.2.0" />
+<gap:plugin name="com.phonegap.plugin.statusbar" version="1.1.0" />
+<gap:plugin name="org.apache.cordova.device" />
+-->
+
+<!-- bad - dumped
+<plugin name="com.toluhta.immersify" spec="0.1.0" source="pgb" />
+<gap:plugin name="org.apache.cordova.media" />
+<gap:plugin name="org.apache.cordova.inappbrowser" />
+<gap:plugin name="org.apache.cordova.network-information" />
+
+// don't know yet that this is not needed
+<gap:plugin name="org.devgeeks.canvas2imageplugin" version="0.6.0"/>
+
+-->
+
+<allow-navigation href="corepassion.com/*" />
+<preference name="KeyboardDisplayRequiresUserAction" value="false" />
+<preference name="orientation" value="landscape" />
+<preference name="target-device" value="tablet" />
+<preference name="fullscreen" value="true" />
+
+<preference name="StatusBarOverlaysWebView" value="true" />
+<gap:config-file platform="ios" parent="UIStatusBarHidden">
+    <true/>
+</gap:config-file>
+<gap:config-file platform="ios" parent="UIViewControllerBasedStatusBarAppearance">
+    <false/>
+</gap:config-file>
+
+    <allow-navigation href="*" />
+    <allow-intent href="*" />
+    <access origin="*" />
+<access origin="http://whatsmydestiny.com" />
+<access origin="https://www.google-analytics.com" />
+
+
+<feature name="http://api.phonegap.com/1.0/network" />
+<feature name="http://api.phonegap.com/1.0/notification" />
+<feature name="http://api.phonegap.com/1.0/media" />
+<feature name="http://api.phonegap.com/1.0/device" />
+
+
+
+
+
+
+<icon src="icon.png" />
+<splash src="splash.png" />
+
+
+<!-- Define app icon for each platform. -->
+<!-- iOS 7+ -->
+<!-- iPhone 6 / 6+ -->
+<icon src="res/icon-60@3x.png" gap:platform="ios" width="180" height="180" />
+
+<!-- iPhone / iPod Touch  -->
+<icon src="res/icon-60.png" gap:platform="ios" width="60" height="60" />
+<icon src="res/icon-60@2x.png" gap:platform="ios" width="120" height="120" />
+
+<!-- iPad -->
+<icon src="res/icon-76.png" gap:platform="ios" width="76" height="76" />
+<icon src="res/icon-76@2x.png" gap:platform="ios" width="152" height="152" />
+
+<!-- iOS 6.1 icons -->
+<!-- iPhone / iPod Touch -->
+<icon src="res/icon.png" gap:platform="ios" width="57" height="57" />
+<icon src="res/icon@2x.png" gap:platform="ios" width="114" height="114" />
+
+<!-- iPad -->
+<icon src="res/icon-72.png" gap:platform="ios" width="72" height="72" />
+<icon src="res/icon-72@2x.png" gap:platform="ios" width="144" height="144" />
+<icon src="res/icon-83.5@2x.png" platform="ios" width="167" height="167"/>
+
+<!-- multitasking and settings iOS -->
+<icon src="res/icon-58.png" platform="ios" width="58" height="58" />
+<icon src="res/icon-87.png" platform="ios" width="87" height="87" />
+
+
+<!-- Define app splash screen for each platform. -->
+<!-- iPhone and iPod touch -->
+<gap:splash src="res/Default.png" gap:platform="ios" width="320" height="480" />
+<gap:splash src="res/Default@2x.png" gap:platform="ios" width="640" height="960" />
+
+<!-- iPhone 5 / iPod Touch (5th Generation) -->
+<gap:splash src="res/Default-568h@2x.png" gap:platform="ios" width="640" height="1136" />
+
+<!-- iPhone 6 -->
+<gap:splash src="res/Default-667h@2x.png" gap:platform="ios" width="750" height="1334" />
+<gap:splash src="res/Default-Portrait-736h@3x.png" gap:platform="ios" width="1242" height="2208" />
+<gap:splash src="res/Default-Landscape-736h@3x.png" gap:platform="ios" width="2208" height="1242" />
+
+<!-- iPad -->
+<gap:splash src="res/Default-Portrait.png" gap:platform="ios" width="768" height="1024" />
+<gap:splash src="res/Default-Landscape.png" gap:platform="ios" width="1024" height="768" />
+
+<!-- Retina iPad -->
+<gap:splash src="res/Default-Portrait@2x.png" gap:platform="ios" width="1536" height="2048" />
+<gap:splash src="res/Default-Landscape@2x.png" gap:platform="ios" width="2048" height="1536" />
+
+<gap:splash src="res/l-ldpi.png" gap:platform="android" gap:qualifier="land-ldpi" />
+<gap:splash src="res/l-mdpi.png" gap:platform="android" gap:qualifier="land-mdpi" />
+<gap:splash src="res/l-hdpi.png" gap:platform="android" gap:qualifier="land-hdpi" />
+<gap:splash src="res/l-xhdpi.png" gap:platform="android" gap:qualifier="land-xhdpi" />
+<gap:splash src="res/l-xxhdpi.png" gap:platform="android" gap:qualifier="land-xxhdpi" />
+<gap:splash src="res/l-xxxhdpi.png" gap:platform="android" gap:qualifier="land-xxxhdpi" />
+<gap:splash src="res/p-ldpi.png" gap:platform="android" gap:qualifier="port-ldpi" />
+<gap:splash src="res/p-mdpi.png" gap:platform="android" gap:qualifier="port-mdpi" />
+<gap:splash src="res/p-hdpi.png" gap:platform="android" gap:qualifier="port-hdpi" />
+<gap:splash src="res/p-xhdpi.png" gap:platform="android" gap:qualifier="port-xhdpi" />
+<gap:splash src="res/p-xxhdpi.png" gap:platform="android" gap:qualifier="port-xxhdpi" />
+<gap:splash src="res/p-xxxhdpi.png" gap:platform="android" gap:qualifier="port-xxxhdpi" />
+
+<!--
+-->
+<gap:config-file platform="android" parent="/manifest">
+  <application android:debuggable="false" />
+</gap:config-file>
+</widget>

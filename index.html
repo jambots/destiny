@@ -1,0 +1,3130 @@
+<html>
+<head>
+<meta http-equiv = "content-type" content = "application/xhtml+xml; charset = UTF-8" />
+<meta content = 'width = device-width, initial-scale = 1.0, maximum-scale = 1.0, user-scalable = 0' name = 'viewport' />
+<meta name = "viewport" content = "width = device-width, maximum-scale = 1.0, initial-scale = 1.0">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+
+<meta http-equiv="Content-Security-Policy" content="default-src * 'self' 'unsafe-inline' 'unsafe-eval' data: gap:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *; img-src 'self' *; connect-src *">
+
+
+<meta name = "apple-mobile-web-app-capable" content = "yes">
+<meta name = "title" content = "Num" /><meta name = "description" content = "Wes Hamilton Numerology" />
+<title>Wes Hamilton Numerology</title>
+<script src="phonegap.js"></script>
+<script src="jquery.min.js"></script>
+<!--
+<script type="text/javascript" src="about.js"></script>
+<script type="text/javascript" src="tutorial.js"></script>
+<script type="text/javascript" src="rui.js"></script>
+<script type="text/javascript" src="summaryfields.js"></script>
+<script type="text/javascript" src="jsPDF/jspdf.js"></script>
+<script type="text/javascript" src="jsPDF/libs/Deflate/adler32cs.js"></script>
+<script type="text/javascript" src="jsPDF/libs/BlobBuilder.min.js"></script>
+
+<script type="text/javascript" src="jsPDF/jspdf.plugin.addimage.js"></script>
+<script type="text/javascript" src="jsPDF/jspdf.plugin.standard_fonts_metrics.js"></script>
+<script type="text/javascript" src="jsPDF/jspdf.plugin.split_text_to_size.js"></script>
+<script type="text/javascript" src="jsPDF/jspdf.plugin.from_html.js"></script>
+
+<script src="metabyfieldvalue.js"></script>
+<script src="summarybyfieldvalue.js"></script>
+
+<script>
+document.addEventListener('deviceready', this.onDeviceReady, false);
+function onDeviceReady(){
+  //dbug('onDeviceReady()');
+  web=false;
+  if(device.platform=="Android"){
+    android=true;
+    AndroidFullScreen.immersiveMode(successFunction, errorFunction);
+    //Immersify.enableSticky(immersifySuccess, immersifyError); // no longer using plugin
+    }
+  if(device.platform=="iOS"){ios=true;}
+  }
+var web=true;
+var ios=false;
+var android=false;
+
+var viewportWidth=1;
+var viewportHeight=1;
+var canv;
+var ctx;
+var cellsDown=24;
+var rowCells=1;
+var cellsAcross=32;
+var g=1;
+var uiObj=[];
+var rowCount=0;
+var shifted=false;
+// begin article functions and vars
+var searchData=[];
+var articleWidth=100;
+var searchPhrase="";
+var articleHeight=100;
+var articleUp=false;
+function closeArticle(){
+  document.getElementById('articleDiv').innerHTML="";
+  articleUp=false;
+  if((currentPage=="toolSplash")||(currentPage=="login")){
+    if((currentPage=="login")&&(profileReturnPage=="appcorepassioncareer")){
+      currentPage="login";
+    }
+    else{
+      currentPage="toolbox";
+    }
+  }
+  geometry();
+}
+var articleFilename="";
+function loadArticle(filename, lineNum){
+  stopSplash();
+  articleFilename=filename;
+  //dbug('loadArticle('+filename+', '+lineNum+')');
+  headerText.innerHTML="Career Seeker";
+  var htmlString="";
+  htmlString+='<div id="articleHolder" class="container">';
+  var fileId="not found";
+  var lines=[];
+  var lcSearchPhrase=searchPhrase.toLowerCase();
+  for (var s=0; s<searchData.length; s++){
+    //dbuga(searchData[s].filename +'??'+ filename);
+    if(searchData[s].filename==filename){
+      fileId=searchData[s].id;
+      for (var l=0; l<searchData[s].lines.length; l++){
+        var line=searchData[s].lines[l];
+        if(searchPhrase != ""){line=highlightLine(line,searchPhrase);}
+        line=line.replace('src="', 'src="pdf/');
+        lines.push(line);
+      }
+    }
+  }
+  //dbuga("lines.length="+lines.length);
+  if(filename != "glossary.html"){
+    lines=glossarize(lines);
+    }
+  htmlString+=lines.join("\n");
+  htmlString+='<div class="closeBlackIcon" style="float:right; width:44px; height:44px;" ontouchend="javascript:event.preventDefault(); closeArticle()"></div>';
+  htmlString+='</div>';
+  htmlString+='<div class="closeBlackIconTop" ontouchend="javascript:event.preventDefault(); closeArticle()"></div>';
+
+  articleDiv.innerHTML="";
+  //document.getElementById('articleDiv').scrollTop=0
+  articleDiv.innerHTML=htmlString;
+  if(lineNum>0){
+    //dbuga(fileId+""+lineNum);
+    $('#articleHolder').scrollTop(($('#'+fileId+lineNum).offset().top-50));
+  }
+  else{// this refuses to work.
+    window.setTimeout('articleTop()', 1);
+  }
+  articleUp=true;
+  geometry();
+}
+var colorMap={
+        "bg":{"focus":{"r":0, "g":0, "b":0}, "highlight":{"r":200, "g":200, "b":200}, "blur":{"r":240, "g":240, "b":"240"}},
+        "color":{"focus":{"r":255, "g":255, "b":255}, "highlight":{"r":0, "g":0, "b":0}, "blur":{"r":100, "g":100, "b":"100"}}
+  };
+var rCanv;
+var rCtx;
+function init(){
+  //dbuga('init()');
+  canv=document.getElementById('mainCanvas');
+  ctx=canv.getContext('2d');
+  rCanv=document.getElementById('reportCanvas');
+  rCtx=rCanv.getContext('2d');
+  //console.log('init()');
+  document.getElementById('preloadHolder').style.display="none";
+  geometry();
+  labelObj=[
+  ];
+  var defaultValueSize=.85;
+  var defaultLabelSize=.75;
+  uiObj=[{
+        "id":"metaDisplay", "focusable":false,
+        "limit":2, "type":"label",
+        "w":12, "h":6.5,
+        "l":19, "t":1,
+        "r":31, "b":7.5,
+        "down":1, "up":-11,
+        "valueSize":.6, "labelSize":.7,
+        "label":"",
+        "value":"",
+        "focus":0}
+         ,{
+        "id":"firstNameInput", "focusable":true,
+        "highlights":[
+         "firstName",
+         "physicalPlane",
+         "mentalPlane",
+         "emotionalPlane",
+         "intuitivePlane",
+         "destiny",
+         "realization",
+         "heartsDesire",
+         "personality",
+         "habitChallenge"
+         ],
+        "limit":20, "type":"alpha",
+        "w":20, "h":rowCells,
+        "l":1, "t":1,
+        "r":21, "b":2,
+        "down":1, "up":-2,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"First Name",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"middleNameInput", "focusable":true,
+        "highlights":[
+         "middleName",
+         "physicalPlane",
+         "mentalPlane",
+         "emotionalPlane",
+         "intuitivePlane",
+         "destiny",
+         "realization",
+         "heartsDesire",
+         "personality",
+         "habitChallenge"
+         ],
+        "limit":20, "type":"alpha",
+        "w":20, "h":rowCells,
+        "l":1, "t":2,
+        "r":21, "b":3,
+        "down":1, "up":-1,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"Middle Name",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"lastNameInput", "focusable":true,
+        "highlights":[
+         "lastName",
+         "physicalPlane",
+         "mentalPlane",
+         "emotionalPlane",
+         "intuitivePlane",
+         "destiny",
+         "realization",
+         "heartsDesire",
+         "personality",
+         "habitChallenge"
+         ],
+        "limit":20, "type":"alpha",
+        "w":20, "h":rowCells,
+        "l":1, "t":3,
+        "r":21, "b":4,
+        "down":1, "up":-1,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"Last Name",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"currentNameInput", "focusable":true,
+        "highlights":[
+         ],
+        "limit":40, "type":"alpha",
+        "w":20, "h":rowCells,
+        "l":1, "t":4,
+        "r":21, "b":5,
+        "down":1, "up":-1,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"Current Name",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"emailInput", "focusable":true,
+        "highlights":[
+         ],
+        "limit":40, "type":"alphacharnumeric",
+        "w":20, "h":rowCells,
+        "l":1, "t":5,
+        "r":21, "b":6,
+        "down":1, "up":-1,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"Email",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"phoneInput", "focusable":true,
+        "highlights":[
+         ],
+        "limit":20, "type":"numericphone",
+        "w":9, "h":2,
+        "l":22, "t":1,
+        "r":31, "b":3,
+        "down":1, "up":-1,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"Phone",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"birthdayInput", "focusable":true,
+        "highlights":[
+         "ageInYears",
+         "dayOfWeek",
+         "dayOfBirth",
+         "birthpath",
+         "personalYear",
+         "personalMonth",
+         "personalDay",
+         "realization",
+         "firstPinnacle",
+         "secondPinnacle",
+         "thirdPinnacle",
+         "fourthPinnacle",
+         "firstChallenge",
+         "secondChallenge",
+         "thirdChallenge",
+         "fourthChallenge",
+         "firstAge",
+         "secondAge",
+         "thirdAge",
+         "fourthAge",
+         ],
+        "limit":8, "type":"numericslash",
+        "w":9, "h":2,
+        "l":22, "t":4,
+        "r":31, "b":6,
+        "down":-5, "up":-1,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"Birthday",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"ageInYears", "focusable":false,
+        "limit":10, "type":"label",
+        "w":9, "h":1,
+        "l":22, "t":7,
+        "r":31, "b":8,
+        "down":2, "up":-2,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"Age",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"dayOfWeek", "focusable":false,
+        "limit":10, "type":"label",
+        "w":9, "h":1,
+        "l":22, "t":9,
+        "r":31, "b":10,
+        "down":2, "up":-2,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"Weekday",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"firstName", "focusable":true,
+        "limit":5, "type":"label",
+        "w":9, "h":rowCells,
+        "l":1, "t":7,
+        "r":10, "b":8,
+        "down":2, "up":-3,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"First Name",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"physicalPlane", "focusable":true,
+        "limit":5, "type":"label",
+        "w":9, "h":rowCells,
+        "l":12, "t":7,
+        "r":21, "b":8,
+        "down":2, "up":-2,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"Physical Plane",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"middleName", "focusable":true,
+        "limit":5, "type":"label",
+        "w":9, "h":rowCells,
+        "l":1, "t":8,
+        "r":10, "b":9,
+        "down":2, "up":-2,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"Middle Name",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"mentalPlane", "focusable":true,
+        "limit":5, "type":"label",
+        "w":9, "h":rowCells,
+        "l":12, "t":8,
+        "r":21, "b":9,
+        "down":2, "up":-2,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"Mental Plane",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"lastName", "focusable":true,
+        "limit":5, "type":"label",
+        "w":9, "h":rowCells,
+        "l":1, "t":9,
+        "r":10, "b":10,
+        "down":3, "up":-2,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"Last Name",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"emotionalPlane", "focusable":true,
+        "limit":5, "type":"label",
+        "w":9, "h":rowCells,
+        "l":12, "t":9,
+        "r":21, "b":10,
+        "down":1, "up":-2,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"Emotional Plane",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"intuitivePlane", "focusable":true,
+        "limit":5, "type":"label",
+        "w":9, "h":rowCells,
+        "l":12, "t":10,
+        "r":21, "b":11,
+        "down":3, "up":-1,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"Intuitive Plane",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"dayOfBirth", "focusable":true,
+        "limit":5, "type":"label",
+        "w":9, "h":rowCells,
+        "l":1, "t":11,
+        "r":10, "b":12,
+        "down":1, "up":-3,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"Day of Birth",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"birthpath", "focusable":true,
+        "limit":5, "type":"label",
+        "w":9, "h":rowCells,
+        "l":1, "t":12,
+        "r":10, "b":13,
+        "down":4, "up":-1,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"Birthpath",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"personalYear", "focusable":true,
+        "limit":5, "type":"label",
+        "w":8, "h":rowCells,
+        "l":12, "t":12,
+        "r":20, "b":13,
+        "down":4, "up":-3,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"Personal Year:",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"personalMonth", "focusable":true,
+        "limit":5, "type":"label",
+        "w":5, "h":rowCells,
+        "l":20, "t":12,
+        "r":25, "b":13,
+        "down":4, "up":-4,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"Month:",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"personalDay", "focusable":true,
+        "limit":5, "type":"label",
+        "w":4, "h":rowCells,
+        "l":25, "t":12,
+        "r":29, "b":13,
+        "down":4, "up":-5,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"Day:",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"destiny", "focusable":true,
+        "limit":5, "type":"label",
+        "w":9, "h":rowCells,
+        "l":1, "t":14,
+        "r":10, "b":15,
+        "down":4, "up":-4,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"Destiny",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"~", "focusable":false,
+        "limit":5, "type":"label",
+        "w":4, "h":rowCells,
+        "l":16, "t":14,
+        "r":20, "b":15,
+        "down":5, "up":-4,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"Pinnacles",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"~", "focusable":false,
+        "limit":5, "type":"label",
+        "w":5, "h":rowCells,
+        "l":21, "t":14,
+        "r":26, "b":15,
+        "down":5, "up":-4,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"Challenges",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"~", "focusable":false,
+        "limit":5, "type":"label",
+        "w":3, "h":rowCells,
+        "l":27, "t":14,
+        "r":30, "b":15,
+        "down":5, "up":-4,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"Ages",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"realization", "focusable":true,
+        "limit":5, "type":"label",
+        "w":9, "h":rowCells,
+        "l":1, "t":15,
+        "r":10, "b":16,
+        "down":5, "up":-4,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"Realization",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"firstLabel", "focusable":true,
+        "limit":5, "type":"label",
+        "w":4, "h":rowCells,
+        "l":12, "t":15,
+        "r":16, "b":16,
+        "down":5, "up":-5,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"First",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"firstPinnacle", "focusable":true,
+        "limit":5, "type":"label",
+        "w":2, "h":rowCells,
+        "l":16, "t":15,
+        "r":18, "b":16,
+        "down":5, "up":-5,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"firstChallenge", "focusable":true,
+        "limit":5, "type":"label",
+        "w":2, "h":rowCells,
+        "l":21, "t":15,
+        "r":23, "b":16,
+        "down":5, "up":-5,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"firstAge", "focusable":false,
+        "limit":5, "type":"label",
+        "w":6, "h":rowCells,
+        "l":25, "t":15,
+        "r":31, "b":16,
+        "down":5, "up":-5,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"heartsDesire", "focusable":true,
+        "limit":5, "type":"label",
+        "w":9, "h":rowCells,
+        "l":1, "t":16,
+        "r":10, "b":17,
+        "down":5, "up":-5,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"Heart's Desire",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"secondLabel", "focusable":true,
+        "limit":5, "type":"label",
+        "w":4, "h":rowCells,
+        "l":12, "t":16,
+        "r":16, "b":17,
+        "down":5, "up":-5,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"Second",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"secondPinnacle", "focusable":true,
+        "limit":5, "type":"label",
+        "w":2, "h":rowCells,
+        "l":16, "t":16,
+        "r":18, "b":17,
+        "down":5, "up":-5,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"secondChallenge", "focusable":true,
+        "limit":5, "type":"label",
+        "w":2, "h":rowCells,
+        "l":21, "t":16,
+        "r":23, "b":17,
+        "down":5, "up":-5,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"secondAge", "focusable":false,
+        "limit":5, "type":"label",
+        "w":6, "h":rowCells,
+        "l":25, "t":16,
+        "r":31, "b":17,
+        "down":5, "up":-5,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"personality", "focusable":true,
+        "limit":5, "type":"label",
+        "w":9, "h":rowCells,
+        "l":1, "t":17,
+        "r":10, "b":18,
+        "down":5, "up":-5,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"Personality",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"thirdLabel", "focusable":true,
+        "limit":5, "type":"label",
+        "w":4, "h":rowCells,
+        "l":12, "t":17,
+        "r":16, "b":18,
+        "down":5, "up":-5,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"Third",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"thirdPinnacle", "focusable":true,
+        "limit":5, "type":"label",
+        "w":2, "h":rowCells,
+        "l":16, "t":17,
+        "r":18, "b":18,
+        "down":5, "up":-5,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"thirdChallenge", "focusable":true,
+        "limit":5, "type":"label",
+        "w":2, "h":rowCells,
+        "l":21, "t":17,
+        "r":23, "b":18,
+        "down":5, "up":-5,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"thirdAge", "focusable":false,
+        "limit":5, "type":"label",
+        "w":6, "h":rowCells,
+        "l":25, "t":17,
+        "r":31, "b":18,
+        "down":5, "up":-5,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"habitChallenge", "focusable":true,
+        "limit":5, "type":"label",
+        "w":9, "h":rowCells,
+        "l":1, "t":18,
+        "r":10, "b":19,
+        "down":5, "up":-5,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"Habit Challenge",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"fourthLabel", "focusable":true,
+        "limit":5, "type":"label",
+        "w":4, "h":rowCells,
+        "l":12, "t":18,
+        "r":16, "b":19,
+        "down":6, "up":-5,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"Fourth",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"fourthPinnacle", "focusable":true,
+        "limit":5, "type":"label",
+        "w":2, "h":rowCells,
+        "l":16, "t":18,
+        "r":18, "b":19,
+        "down":8, "up":-5,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"fourthChallenge", "focusable":true,
+        "limit":5, "type":"label",
+        "w":2, "h":rowCells,
+        "l":21, "t":18,
+        "r":23, "b":19,
+        "down":10, "up":-5,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"fourthAge", "focusable":false,
+        "limit":5, "type":"label",
+        "w":6, "h":rowCells,
+        "l":25, "t":18,
+        "r":31, "b":19,
+        "down":11, "up":-5,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"~", "focusable":false,
+        "limit":5, "type":"label",
+        "w":8, "h":rowCells*2,
+        "l":1, "t":20,
+        "r":9, "b":22,
+        "down":11, "up":-5,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"Distribution of Numbers in Name",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"count1", "focusable":true,
+        "limit":2, "type":"label",
+        "w":1, "h":2,
+        "l":10, "t":20,
+        "r":11, "b":22,
+        "down":10, "up":-6,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"1",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"count2", "focusable":true,
+        "limit":2, "type":"label",
+        "w":1, "h":2,
+        "l":11.75, "t":20,
+        "r":12.75, "b":22,
+        "down":1, "up":-6,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"2",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"count3", "focusable":true,
+        "limit":2, "type":"label",
+        "w":1, "h":2,
+        "l":13.5, "t":20,
+        "r":14.5, "b":22,
+        "down":1, "up":-7,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"3",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"count4", "focusable":true,
+        "limit":2, "type":"label",
+        "w":1, "h":2,
+        "l":15.25, "t":20,
+        "r":16.25, "b":22,
+        "down":1, "up":-7,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"4",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"count5", "focusable":true,
+        "limit":2, "type":"label",
+        "w":1, "h":2,
+        "l":17, "t":20,
+        "r":18, "b":22,
+        "down":1, "up":-8,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"5",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"count6", "focusable":true,
+        "limit":2, "type":"label",
+        "w":1, "h":2,
+        "l":18.75, "t":20,
+        "r":19.75, "b":22,
+        "down":1, "up":-9,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"6",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"count7", "focusable":true,
+        "limit":2, "type":"label",
+        "w":1, "h":2,
+        "l":20.5, "t":20,
+        "r":21.5, "b":22,
+        "down":1, "up":-9,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"7",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"count8", "focusable":true,
+        "limit":2, "type":"label",
+        "w":1, "h":2,
+        "l":22.25, "t":20,
+        "r":23.25, "b":22,
+        "down":1, "up":-10,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"8",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"count9", "focusable":true,
+        "limit":2, "type":"label",
+        "w":1, "h":2,
+        "l":24, "t":20,
+        "r":25, "b":22,
+        "down":1, "up":-10,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"9",
+        "value":"",
+        "focus":0}
+        ,{
+        "id":"karmicLesson", "focusable":true,
+        "limit":2, "type":"label",
+        "w":6, "h":2,
+        "l":25.5, "t":20,
+        "r":31.5, "b":22,
+        "down":1, "up":-11,
+        "valueSize":defaultValueSize, "labelSize":defaultLabelSize,
+        "label":"Karmic Lesson",
+        "value":"",
+        "focus":0}
+  ];
+  //hideSave();
+  window.setInterval('secondTick()', 1000);
+  window.requestAnimationFrame(tick);
+
+  document.body.style.backgroundImage="";
+  //dbuga('init() 6' );
+
+  //dbuga('init() 7' );
+  //createRui:function(containerRef, barColor, barTextColor, surroundColor, bgColor, textColor, circleColor, iconPath, barIcons, menuIcons, squareIcons, iconPad, selectColor, paraFont, headFont)
+  rui.createRui(document.getElementById('menuHolder'), "#be792b", "#be792b", "#be792b", "rgb(255,255,255)", "#b91c1b", "#ffffff", "icons/", "white", "red", "red", 0.25, "rgba(200,200,200,.25)", "avantbook", "avantbold");
+
+  //dbuga('init() yOffset='+yOffset );
+  //dbuga('init() 8');
+  openTutorial();
+  //dbuga('init() completed');
+  }
+// unused
+function appDown(e){
+  dbuga('appDown ?????');
+  }
+
+function appTyped(keyCode){
+    dbuga("appTyped should be disabled ???");
+  }
+
+
+var searchTyping=false;
+function searchTyped(keyCode){
+  dbuga('searchTyped('+keyCode+') searchTyping:'+searchTyping);
+  }
+var lastDown=0;
+var lastPress=0;
+var linkedSources={
+  "firstName":"firstNameInput",
+  "middleName":"middleNameInput",
+  "lastName":"lastNameInput",
+  };
+function roundRect(ctx, x, y, w, h, rad, lineWidth, strokeStyle, fillStyle, label, labelColor, font, iconAlpha){
+  var inset=rad+lineWidth/2;
+  if(lineWidth>0){
+    ctx.beginPath();
+    ctx.arc(x+inset,y+inset, rad, pi*1, pi*1.5, false);
+    ctx.arc(x+w-inset,y+inset, rad, pi*1.5, pi*2, false);
+    ctx.arc(x+w-inset, y+h-inset, rad, 0, pi*.5, false);
+    ctx.arc(x+inset,y+h-inset, rad, pi*.5, pi*1, false);
+    ctx.closePath();
+    ctx.strokeStyle=strokeStyle;
+    ctx.fillStyle=fillStyle;
+    ctx.fill();
+    ctx.lineWidth=lineWidth;
+    ctx.stroke();
+    }
+  if(label.indexOf(".png")>-1){
+    ctx.globalAlpha=iconAlpha;
+    var img=document.getElementById(label);
+    ctx.drawImage(img, x+inset, y+inset, w-inset*2, h-inset*2);
+    ctx.globalAlpha=1;
+    }
+  else{
+    ctx.fillStyle=labelColor;
+    ctx.textBaseline= "middle";
+    ctx.textAlign= "center";
+    ctx.font=font;
+    var parts=label.split("-");
+    //1:step:1/2, start:1/2
+    //2:step:1/3 start:1/3
+    //3:step:1/4 start:1/4
+    var step=h/(parts.length+1);
+    for (var p=0; p<parts.length; p++){
+      ctx.fillText(parts[p],x+w/2,y+step+step*p);
+      }
+    }
+  }
+var saving=false;
+var hideLeft=-12;
+var unhideLeft=19;
+var hideTop=-2;
+var unhideTop=5;
+function setupLocalStorage(){
+  //dbuga('setupLocalStorage()');
+  if(localStorage.getItem("reading") === null) {
+    //dbuga('setupLocalStorage()3 reading null');
+    localStorage.setItem("reading", JSON.stringify(reading));
+    }
+  else{
+    //dbuga('setupLocalStorage() 4');
+    reading=JSON.parse(localStorage.getItem("reading"));
+    updateIdValue("firstNameInput", reading.firstNameInput);
+    updateIdValue("middleNameInput", reading.middleNameInput);
+    updateIdValue("lastNameInput", reading.lastNameInput);
+    updateIdValue("currentNameInput", reading.currentNameInput);
+    updateIdValue("birthdayInput", reading.birthdayInput);
+    updateIdValue("phoneInput", reading.phoneInput);
+    updateIdValue("emailInput", reading.emailInput);
+    //dbuga('setupLocalStorage() 5');
+    userInput();
+    //dbuga('setupLocalStorage() 6');
+    }
+  //dbuga('setupLocalStorage() completed');
+  }
+var reading={"valid":false, "counts":[-1,0,0,0,0,0,0,0,0,0]};
+var daysOfWeek=["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+function nowMMDDYYYY(){
+  var nowDate=new Date();
+  var dd=nowDate.getDate();
+  if(dd<10){dd="0"+dd;}
+  var mm=nowDate.getMonth()+1;
+  if(mm<10){mm="0"+mm;}
+  var yyyy=nowDate.getFullYear();
+  return mm+""+dd+""+yyyy;
+  }
+function userInput(){
+  var nowDate=new Date();
+  reading.valid=false;
+  // needed? use clearCalcs here instead
+  //console.log('userInput so clearCalcs first');
+  clearCalcs();
+  reading.firstNameInput=valueOfId("firstNameInput").toLowerCase();
+  reading.middleNameInput=valueOfId("middleNameInput").toLowerCase();
+  reading.lastNameInput=valueOfId("lastNameInput").toLowerCase();
+  reading.currentNameInput=valueOfId("currentNameInput").toLowerCase();
+  reading.emailInput=valueOfId("emailInput").toLowerCase();
+  reading.phoneInput=valueOfId("phoneInput");
+  reading.birthdayInput=valueOfId("birthdayInput");
+
+  if(reading.birthdayInput.length==8){
+    reading.birthMMDDYYYY=reading.birthdayInput;
+    var parts=reading.birthdayInput.split('');
+    reading.birthYYYY=parts.slice(4,8).join('');
+    reading.birthDD=parts.slice(2,4).join('');
+    reading.birthMM=parts.slice(0,2).join('');
+    //dbuga(uiObj[uiFocus].id+ " " +uiObj[uiFocus].value);
+    reading.birthdateDate=new Date(Number(reading.birthYYYY), Number(reading.birthMM)-1, Number(reading.birthDD));
+    reading.dayOfWeekNum=reading.birthdateDate.getDay();
+    reading.dayOfWeekStr=daysOfWeek[reading.dayOfWeekNum];
+    //reading.dayOfBirth=specialize(reading.birthDD);//1-31 including 11/2...
+    reading.dayOfBirth=reduceNumStr(""+reading.birthDD, "birthDD");//1-31 including 11/2...
+
+    reading.ageInYears=getAge(reading.birthdateDate);
+    reading.birthSum=Number(unmaster(reduceNumStr(reading.birthMM, "birthMM")))+Number(unmaster(reduceNumStr(reading.birthDD, "birthDD")))+Number(unmaster(reduceNumStr(reading.birthYYYY, "birthYYYY")));
+    reading.birthpath=reduceNumStr(""+reading.birthSum, "reading.birthSum");
+  //personal
+    reading.globalYear=nowDate.getFullYear();
+    reading.globalYearVal=reduceNumStr(""+reading.globalYear, "globalyear");
+    var personalYearNum=Number(reading.birthMM)+Number(reading.birthDD)+Number(reading.globalYear);
+    reading.personalYear=reduceNumStr(""+personalYearNum, "personalYear");
+
+    reading.globalMonth=nowDate.getMonth()+1;
+    //dbuga("reading.globalMonth "+reading.globalMonth);
+    reading.globalMonthVal=reduceNumStr(""+reading.globalMonth, "globalMonth");
+
+    reading.personalMonthNum=Number(master(reading.personalYear))+Number(reading.globalMonth);
+    reading.personalMonth=reduceNumStr(""+reading.personalMonthNum, "personalMonth");
+    reading.globalDay=nowDate.getDate();
+    reading.globalDayVal=reduceNumStr(""+reading.globalDay, "globalDay");
+    reading.personalDayNum=Number(master(reading.personalYear))+Number(reading.globalMonth)+Number(reading.globalDay);
+    reading.personalDay=reduceNumStr(reading.personalDayNum+"", "personalDayNum");
+    var m=Number(unmaster(reduceNumStr(reading.birthMM)), "m");
+    var d=Number(unmaster(reduceNumStr(reading.birthDD)), "d");
+    var y=Number(unmaster(reduceNumStr(reading.birthYYYY)), "y");
+    reading.firstPinnacle=reduceNumStr(""+(m+d), "firstPinnacle");
+    reading.secondPinnacle=reduceNumStr(""+(d+y), "secondPinnacle");
+    reading.thirdPinnacle=reduceNumStr(""+sumArray([reading.firstPinnacle,reading.secondPinnacle]), "thirdPinnacle");
+    reading.fourthPinnacle=reduceNumStr(""+(m+y), "fourthPinnacle");
+    reading.firstChallenge=reduceNumStr(""+Math.abs(m-d), "firstChallenge");
+    reading.secondChallenge=reduceNumStr(""+Math.abs(d-y), "secondChallenge");
+    reading.thirdChallenge=reduceNumStr(""+Math.abs(Number(unmaster(reading.firstChallenge))-Number(unmaster(reading.secondChallenge))), "thirdChallenge");
+    reading.fourthChallenge=reduceNumStr(""+Math.abs(m-y), "fourthChallenge");
+// june 17 new ages
+    reading.firstAgeStart=0;
+    reading.firstAgeEnd=36-Number(unmaster(reading.birthpath));
+    reading.firstAgeLabel=reading.firstAgeStart+" to "+reading.firstAgeEnd;
+    reading.firstAgeValue=reading.firstAgeEnd+Number(reading.birthYYYY);
+    reading.secondAgeStart=reading.firstAgeEnd+1;
+    reading.secondAgeEnd=reading.secondAgeStart+8;
+    reading.secondAgeLabel=reading.secondAgeStart+" to "+reading.secondAgeEnd;
+    reading.secondAgeValue=reading.secondAgeEnd+Number(reading.birthYYYY);
+    reading.thirdAgeStart=reading.secondAgeEnd+1;
+    reading.thirdAgeEnd=reading.thirdAgeStart+8;
+    reading.thirdAgeLabel=reading.thirdAgeStart+" to "+reading.thirdAgeEnd;
+    reading.thirdAgeValue=reading.thirdAgeEnd+Number(reading.birthYYYY);
+    reading.fourthAgeStart=reading.thirdAgeEnd+1;
+    reading.fourthAgeEnd="*";
+    reading.fourthAgeLabel=reading.fourthAgeStart+" to "+reading.fourthAgeEnd;
+    reading.fourthAgeValue="";
+    }
+  //dbug("reading.birthdayInput.length "+reading.birthdayInput.length);
+  if(reading.firstNameInput != ""){
+    reading.firstNameSum=sumArray(strToNums(valueOfId("firstNameInput")));
+    reading.firstNameVal=reduceNumStr(""+reading.firstNameSum, "reading.firstNameSum");
+    //console.log('reading.firstNameVal '+reading.firstNameVal);
+    }
+  if(reading.middleNameInput != ""){
+    reading.middleNameSum=sumArray(strToNums(valueOfId("middleNameInput")));
+    reading.middleNameVal=reduceNumStr(""+reading.middleNameSum, "reading.middleNameSum");
+    }
+  if(reading.lastNameInput != ""){
+    reading.lastNameSum=sumArray(strToNums(valueOfId("lastNameInput")));
+    reading.lastNameVal=reduceNumStr(""+reading.lastNameSum, "reading.lastNameSum");
+    }
+  if((reading.firstNameInput != "")&&(reading.lastNameInput != "")){
+    reading.destiny=reduceNumStr(""+sumArray([master(reading.firstNameVal), master(reading.middleNameVal), master(reading.lastNameVal)]), "destiny");
+    //console.log(reading);
+    reading.nameStr=valueOfId("firstNameInput")+valueOfId("middleNameInput")+valueOfId("lastNameInput");
+    reading.nameVowelArray=vowels(reading.nameStr);
+    reading.heartsDesire=reduceNumStr(""+sumLetterArray(reading.nameVowelArray), "heartsDesire");
+    reading.nameConsonantArray=consonants(reading.nameStr);
+    reading.personality=reduceNumStr(""+sumLetterArray(reading.nameConsonantArray), "personality");
+    reading.habitChallenge=reduceNumStr(""+reading.nameStr.length, "habitChallenge");
+    reading.counts=[-1,
+    numberCount(1,reading.nameStr),
+    numberCount(2,reading.nameStr),
+    numberCount(3,reading.nameStr),
+    numberCount(4,reading.nameStr),
+    numberCount(5,reading.nameStr),
+    numberCount(6,reading.nameStr),
+    numberCount(7,reading.nameStr),
+    numberCount(8,reading.nameStr),
+    numberCount(9,reading.nameStr)
+    ];
+    reading.karmicArray=[];
+  //dbuga("userInput counts "+reading.counts.length);
+    for(var n=1; n<=9; n++){
+      if(reading.counts[n]==0){reading.karmicArray.push(""+n);}
+      }
+    reading.physicalPlane=reduceNumStr(""+(reading.counts[4]+reading.counts[5]), "physicalPlane");
+    reading.mentalPlane=reduceNumStr(""+(reading.counts[1]+reading.counts[8]), "mentalPlane");
+    reading.emotionalPlane=reduceNumStr(""+(reading.counts[2]+reading.counts[3]+reading.counts[6]), "emotionalPlane");
+    reading.intuitivePlane=reduceNumStr(""+(reading.counts[7]+reading.counts[9]), "intuitivePlane");
+
+  if((reading.birthdayInput.length==8)&&(reading.firstNameInput != "")&&(reading.lastNameInput != "")){
+    // fully valid
+    reading.realization=reduceNumStr(""+sumArray([reading.destiny, reading.birthpath]), "realization");
+    }
+
+    localStorage.setItem("reading", JSON.stringify(reading));
+    }
+  if(metaFocus != -1){updateMeta();}
+  if((reading.birthdayInput.length==8) && (reading.firstNameInput.length>0) && (reading.lastNameInput.length>0)){
+    reading.valid=true;
+    }
+  updateValues();
+  }
+function clearCalcs(){
+  //dbuga('clearCalcs()');
+    reading.birthMMDDYYYY="";
+    reading.birthYYYY='';
+    reading.birthDD='';
+    reading.birthMM='';
+    reading.dayOfWeekNum=0;
+    reading.dayOfWeekStr="";
+    reading.dayOfBirth="";
+    reading.ageInYears="";
+    reading.birthSum="";
+    reading.birthpath="";
+  //added july 2
+  reading.firstNameInput="";
+  reading.middleNameInput="";
+  reading.lastNameInput="";
+  reading.birthdayInput="";
+  reading.birthdateDate="";
+  reading.valid=false;
+  //added july 2
+  reading.currentNameInput="";
+  reading.emailInput="";
+  reading.phoneInput="";
+  reading.firstNameSum="";
+  reading.firstNameVal="";
+  reading.middleNameSum="";
+  reading.middleNameVal="";
+  reading.lastNameSum="";
+  reading.lastNameVal="";
+  reading.destiny="";
+  reading.nameStr="";
+  reading.nameVowelArray=[];
+  reading.heartsDesire="";
+  reading.nameConsonantArray=[];
+  reading.personality="";
+  reading.realization="";
+
+  reading.habitChallenge="";
+  reading.karmicArray=[];
+  //dbuga("clearCalcs counts "+reading.counts.length);
+  for(var n=1; n<=9; n++){
+    reading.counts[n]="";
+    }
+  reading.physicalPlane="";
+  reading.mentalPlane="";
+  reading.emotionalPlane="";
+  reading.intuitivePlane="";
+  //personal
+  reading.globalYear="";
+  reading.globalYearVal="";
+  var personalYearNum="";
+  reading.personalYear="";
+
+  reading.globalMonth="";
+  reading.globalMonthVal="";
+
+  reading.personalMonthNum="";
+  reading.personalMonth="";
+  reading.globalDay="";
+  reading.globalDayVal="";
+  reading.personalDayNum="";
+  reading.personalDay="";
+  reading.firstPinnacle="";
+  reading.secondPinnacle="";
+  reading.thirdPinnacle="";
+  reading.fourthPinnacle="";
+  reading.firstChallenge="";
+  reading.secondChallenge="";
+  reading.thirdChallenge="";
+  reading.fourthChallenge="";
+  reading.firstAgeLabel="";
+  reading.secondAgeLabel="";
+  reading.thirdAgeLabel="";
+  reading.fourthAgeLabel="";
+  reading.firstAgeValue="";
+  reading.secondAgeValue="";
+  reading.thirdAgeValue="";
+  reading.fourthAgeValue="";
+  updateValues();
+  }
+function updateValues(){
+  updateIdValue("dayOfWeek", reading.dayOfWeekStr);
+  updateIdValue("dayOfBirth", reading.dayOfBirth);
+    updateIdValue("ageInYears", reading.ageInYears);
+    updateIdValue("birthpath", reading.birthpath);
+updateIdValue("firstName", reading.firstNameVal);
+    updateIdValue("middleName", reading.middleNameVal);
+  updateIdValue("lastName", reading.lastNameVal);
+updateIdValue("destiny", reading.destiny);
+  updateIdValue("heartsDesire", reading.heartsDesire);
+    updateIdValue("personality", reading.personality);
+    updateIdValue("realization", reading.realization);
+  updateIdValue("habitChallenge", reading.habitChallenge);
+  //dbuga("update counts "+reading.counts.length);
+for(var n=1; n<=9; n++){
+    updateIdValue("count"+n, ""+reading.counts[n]);
+ }
+  updateIdValue("karmicLesson", reading.karmicArray.join(" "));
+  updateIdValue("physicalPlane", ""+reading.physicalPlane);
+  updateIdValue("mentalPlane", ""+reading.mentalPlane);
+  updateIdValue("emotionalPlane", ""+reading.emotionalPlane);
+  updateIdValue("intuitivePlane", ""+reading.intuitivePlane);
+  updateIdValue("personalYear", ""+reading.personalYear);
+  updateIdValue("personalMonth", ""+reading.personalMonth);
+  updateIdValue("personalDay", ""+reading.personalDay);
+  updateIdValue("firstPinnacle", ""+reading.firstPinnacle);
+  updateIdValue("secondPinnacle", ""+reading.secondPinnacle);
+  updateIdValue("thirdPinnacle", ""+reading.thirdPinnacle);
+  updateIdValue("fourthPinnacle", ""+reading.fourthPinnacle);
+  updateIdValue("firstChallenge", ""+reading.firstChallenge);
+  updateIdValue("secondChallenge", ""+reading.secondChallenge);
+  updateIdValue("thirdChallenge", ""+reading.thirdChallenge);
+  updateIdValue("fourthChallenge", ""+reading.fourthChallenge);
+  updateIdLabel("firstAge", reading.firstAgeLabel);
+  updateIdValue("firstAge", reading.firstAgeValue);
+  updateIdLabel("secondAge", reading.secondAgeLabel);
+  updateIdValue("secondAge", reading.secondAgeValue);
+  updateIdLabel("thirdAge", reading.thirdAgeLabel);
+  updateIdValue("thirdAge", reading.thirdAgeValue);
+  updateIdLabel("fourthAge", reading.fourthAgeLabel);
+  updateIdValue("fourthAge", reading.fourthAgeValue);
+  }
+function getAge(birthDate) {
+    var today = new Date();
+    var age = today.getFullYear() - birthDate.getFullYear();
+    var m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+    }
+    return age;
+}
+function numberCount(num, str){
+  var nums=strToNums(str);
+  var count=0;
+  for(var n=0; n<nums.length; n++){
+    if(nums[n]==num){count++;}
+    }
+  return count;
+  }
+function vowels(str){
+  var vowels=[];
+  var consonants=[];
+  var parts=str.split('');
+  var prevVowel=false;
+  for(var p=0; p<parts.length; p++){
+    if(isVowel(parts[p])){
+      if((parts[p]=="y")&&(prevVowel==true)){
+        consonants.push(parts[p]);
+        prevVowel=false;
+        }
+      else{
+        vowels.push(parts[p]);
+        prevVowel=true;
+        }
+      }
+    else{
+      consonants.push(parts[p]);
+      prevVowel=false;
+      }
+    }
+  return vowels;
+  }
+function consonants(str){
+  var vowels=[];
+  var consonants=[];
+  var parts=str.split('');
+  var prevVowel=false;
+  for(var p=0; p<parts.length; p++){
+    if(isVowel(parts[p])){
+      if((parts[p]=="y")&&(prevVowel==true)){
+        consonants.push(parts[p]);
+        prevVowel=false;
+        }
+      else{
+        vowels.push(parts[p]);
+        prevVowel=true;
+        }
+      }
+    else{
+      consonants.push(parts[p]);
+      prevVowel=false;
+      }
+    }
+  return consonants;
+  }
+function isVowel(c) {
+    return ['a', 'e', 'i', 'o', 'u', 'y'].indexOf(c.toLowerCase()) !== -1
+}
+function sumArray(arr){
+  var sum=0;
+  for (var n=0; n<arr.length; n++){
+    var item=""+arr[n];
+    if(item.indexOf("/")>-1){item=unmaster(item);}
+    sum+=Number(item);
+    }
+  return sum;
+  }
+function updateIdValue(id, value){
+  for (var u=0; u<uiObj.length; u++){
+    if(uiObj[u].id==id){
+      uiObj[u].value=value;
+      if(id.indexOf('Input')>-1){
+        //dbuga('localStorage set '+id+' to '+value);
+        document.getElementById(id).value=value;
+        }
+      }
+    }
+  }
+function updateIdLabel(id, value){
+  for (var u=0; u<uiObj.length; u++){
+    if(uiObj[u].id==id){
+      uiObj[u].label=value;
+      }
+    }
+  }
+function valueOfId(id){
+  if(uiObj[u]===null){return "";}
+  var value="";
+  for (var u=0; u<uiObj.length; u++){
+    if(uiObj[u].id==id){
+      value=uiObj[u].value;
+      if(typeof value=="undefined"){value="";}
+      }
+    }
+  return value;
+  }
+var uiFocus=-1;
+var metaFocus=-1;
+//var typed=false;
+//var clearField=false;
+function setUiFocus(toNum){
+  if((uiFocus>-1)&&(toNum>-1)){
+    if(uiObj[uiFocus].id.indexOf("Input")>-1){
+      if(uiObj[toNum].id.indexOf("Input")==-1){
+        hideKeyboard();
+        }
+      }
+    }
+  //console.log('setUiFocus('+toNum+')');
+  //updateIdLabel('metaDisplay', "");
+  uiFocus=toNum;
+
+  //dbuga('setUiFocus sets typed('+typed+') to false');
+  //typed=false;
+  //clearField=false;
+  if(uiFocus != -1){
+    if(uiObj[uiFocus]['focusable']){
+      setMetaFocus(toNum);
+      }
+    }
+  AndroidFullScreen.immersiveMode(successFunction, errorFunction);
+
+  }
+var hideKeyboard = function() {
+ document.activeElement.blur();
+ var inputs = document.querySelectorAll('input');
+ for(var i=0; i < inputs.length; i++) {
+  inputs[i].blur();
+ }
+  if(android){
+   Immersify.enableSticky(immersifySuccess, immersifyError);
+   }
+};
+function immersifySuccess(){
+  //dbuga('immersifySuccess()');
+  }
+function immersifyError(){
+  //dbuga('immersifyError()');
+  }
+function setMetaFocus(toNum){
+  if((menus["dashboard"].selected==false)&&(uiObj[toNum].id.indexOf("Input")==-1)){
+    rui.toggleMenu('dashboard', 'setMetaFocus');
+    }
+  if(inArray(uiObj[toNum]['id'], Object.keys(metaByFieldValue))){
+    metaFocus=toNum;
+    updateMeta();
+    }
+  }
+function updateMeta(){
+  //updateIdLabel("metaDisplay", "");
+  //updateIdValue("metaDisplay", "");
+  menus["dashboard"].panes[0].contents[0].text="";
+  menus["dashboard"].panes[0].contents[1].text="";
+  if(inArray(uiObj[metaFocus]['id'], Object.keys(metaByFieldValue))){// should be true anyways
+    var fields=Object.keys(metaByFieldValue);
+    for (var f=0; f<fields.length; f++){
+      if(fields[f]==uiObj[metaFocus]['id']){
+        var fieldMeta=metaByFieldValue[fields[f]];
+        //updateIdLabel("metaDisplay", ""+fieldMeta['label']);
+        var label=fieldMeta['label'];
+        if(inArray(fields[f], Object.keys(linkedSources))){
+          label=label+" - "+titleCase(reading[linkedSources[fields[f]]]);
+          }
+        menus["dashboard"].panes[0].contents[0].text=label;
+        if(inArray(uiObj[metaFocus]['value'], Object.keys(fieldMeta))){
+          var values=Object.keys(fieldMeta);
+          for(var v=0; v<values.length; v++){
+            if(values[v]==uiObj[metaFocus]['value']){
+              //console.log(fieldMeta['label']+" "+fieldMeta[values[v]]);
+              if((fieldMeta[values[v]]=="")&&(values[v].indexOf("/")>-1)){
+                //updateIdValue("metaDisplay", ""+fieldMeta[unmaster(values[v])]);
+                menus["dashboard"].panes[0].contents[1].text=fieldMeta[unmaster(values[v])];
+                }
+              else{
+                //updateIdValue("metaDisplay", ""+fieldMeta[values[v]]);
+                menus["dashboard"].panes[0].contents[1].text=fieldMeta[values[v]];
+                }
+              }
+            }
+          }
+        else{// val not found, is karma?
+          if(uiObj[metaFocus]['id']=="karmicLesson"){
+            var str="";
+            //console.log('karmicLesson '+uiObj[metaFocus].value)
+            var glom=uiObj[metaFocus].value;
+            if(glom !=""){
+              var parts=glom.split(" ");
+              for(var p=0; p<parts.length; p++){
+                //console.log(parts[p]);
+                str+=fieldMeta[parts[p]]+" ";
+                }
+              //updateIdValue("metaDisplay", str)
+              }
+            menus["dashboard"].panes[0].contents[1].text=str;
+            }
+          }
+        }
+      }
+    }
+  rui.drawUx();
+  }
+function randomColor(){
+  return "rgba(" + rnd(256) +","+ rnd(256) +","+ rnd(256) +",.5)";
+  }
+var frames=0;
+function tick(timestamp){
+  if(uiFocus == -1){redrawAll();}
+  else{
+    if(uiObj[uiFocus].id.indexOf('Input') == -1){redrawAll();}
+    }
+  //canv.width=viewportWidth;
+  frames++;
+  window.requestAnimationFrame(tick);
+  }
+function redrawAll(){
+  drawGrid();
+  drawUi();
+  }
+
+//window.requestAnimationFrame(tick);
+function rnd(range){
+  return Math.floor(Math.random()*range);
+  }
+function wrapText(context, text, x, y, maxWidth, lineHeight, stroke) {
+        //console.log('wrap ' +text+' '+y);
+        var height = lineHeight;
+        var words = text.split(' ');
+        var line = '';
+        for(var n = 0; n < words.length; n++) {
+          var testLine = line + words[n] + ' ';
+          var metrics = context.measureText(testLine);
+          var testWidth = metrics.width;
+          if (testWidth > maxWidth && n > 0) {
+            if(stroke){context.strokeText(line, x, y);}
+            else{context.fillText(line, x, y);}
+            line = words[n] + ' ';
+            y += lineHeight;
+            height += lineHeight;
+            }
+          else {
+            line = testLine;
+            }
+          }
+        if(stroke){context.strokeText(line, x, y);}
+        else{context.fillText(line, x, y);}
+        return height;
+        }
+function wrapTest(context, text, x, y, maxWidth, lineHeight, stroke) {
+        var height = lineHeight;
+        var words = text.split(' ');
+        var line = '';
+        for(var n = 0; n < words.length; n++) {
+          var testLine = line + words[n] + ' ';
+          var metrics = context.measureText(testLine);
+          var testWidth = metrics.width;
+          if (testWidth > maxWidth && n > 0) {
+            line = words[n] + ' ';
+            y += lineHeight;
+            height += lineHeight;
+            }
+          else {
+            line = testLine;
+            }
+          }
+        //console.log(y+" "+height+" "+text)
+        return height;
+        }
+
+function drawGrid(){
+  ctx.fillStyle="white";
+  ctx.fillRect(0,0,canv.width, canv.height);
+  ctx.strokeStyle="rgba(0,0,0,.05)";
+  ctx.lineWidth=g/32;
+  ctx.beginPath();
+  for (var x=0; x<=cellsAcross; x++){
+    ctx.moveTo(x*g, 0);
+    ctx.lineTo(x*g, cellsDown*g);
+    }
+  for (var y=0; y<=cellsDown; y++){
+    ctx.moveTo(0, y*g);
+    ctx.lineTo(cellsAcross*g, y*g);
+    }
+  ctx.stroke();
+  }
+function drawUi(){
+  var focusPad=.1*g;
+  var blurPad=.05*g;
+  var highlights=[];
+  if(uiFocus>-1){
+    if(uiObj[uiFocus].id.indexOf("Input")>-1){
+      highlights=uiObj[uiFocus].highlights;
+      }
+    }
+  //dbug("+highlights "+highlights.length);
+  for (var u=0; u<uiObj.length; u++){
+    //console.log(u+" "+uiObj[u]['id']);
+    //if((uiObj[u]['id']=="findInput")&&(hideButtons)){u++;}
+    if(uiObj[u]['focusable']){
+      if(u==uiFocus){uiObj[u]['focus']+=focusStep;}
+      else{uiObj[u].focus-=focusStep;}
+      if(uiObj[u].focus>1){uiObj[u]['focus']=1;}
+      if(uiObj[u].focus<0){uiObj[u]['focus']=0;}
+      }
+    var prog=Math.sin(uiObj[u].focus*pi/2);
+    var colorR=Math.floor(prog*colorMap['color']['focus'].r+(1-prog)*colorMap['color']['blur'].r);
+    var colorG=Math.floor(prog*colorMap['color']['focus'].g+(1-prog)*colorMap['color']['blur'].g);
+    var colorB=Math.floor(prog*colorMap['color']['focus'].b+(1-prog)*colorMap['color']['blur'].b);
+    var bgR=Math.floor(prog*colorMap['bg']['focus'].r+(1-prog)*colorMap['bg']['blur'].r);
+    var bgG=Math.floor(prog*colorMap['bg']['focus'].g+(1-prog)*colorMap['bg']['blur'].g);
+    var bgB=Math.floor(prog*colorMap['bg']['focus'].b+(1-prog)*colorMap['bg']['blur'].b);
+    if(inArray(uiObj[u]['id'],highlights)){
+      //dbuga('highlight '+uiObj[u]['id']);
+      colorR=Math.floor(prog*colorMap['color']['blur'].r+(1-prog)*colorMap['color']['highlight'].r);
+      colorG=Math.floor(prog*colorMap['color']['blur'].g+(1-prog)*colorMap['color']['highlight'].g);
+      colorB=Math.floor(prog*colorMap['color']['blur'].b+(1-prog)*colorMap['color']['highlight'].b);
+      bgR=Math.floor(prog*colorMap['bg']['blur'].r+(1-prog)*colorMap['bg']['highlight'].r);
+      bgG=Math.floor(prog*colorMap['bg']['blur'].g+(1-prog)*colorMap['bg']['highlight'].g);
+      bgB=Math.floor(prog*colorMap['bg']['blur'].b+(1-prog)*colorMap['bg']['highlight'].b);
+      }
+    var pad=blurPad-focusPad*uiObj[u]['focus'];
+    var value=uiObj[u].value;
+    if(uiObj[u].type.indexOf("slash")>-1){
+      value=dateFormat(value);
+      }
+    if(uiObj[u].type.indexOf("phone")>-1){
+      value=phoneFormat(value);
+      }
+    if(uiObj[u].type.indexOf("alpha")>-1){
+      if (typeof value == 'undefined'){value="";}
+      //titleCase(value);
+      value=titleCase(value);
+      }
+    var valueFontPx=uiObj[u].valueSize*g-pad*0;
+    var labelFontPx=uiObj[u].labelSize*g-pad*0;
+    var valueLinePx=uiObj[u].valueSize*g*1.2;
+    var labelLinePx=uiObj[u].labelSize*g*1.2;
+    if(inArray(uiObj[u]['id'], highlights)){
+      ctx.fillStyle="rgb("+bgR+","+bgG+","+bgB+")";
+      ctx.fillRect(uiObj[u]['l']*g+pad, uiObj[u]['t']*g+pad, uiObj[u]['w']*g-pad*2, uiObj[u]['h']*g-pad*2);
+      }
+    if((uiObj[u].type != "label")||(prog>0)){
+      ctx.fillStyle="rgb("+bgR+","+bgG+","+bgB+")";
+      ctx.fillRect(uiObj[u]['l']*g+pad, uiObj[u]['t']*g+pad, uiObj[u]['w']*g-pad*2, uiObj[u]['h']*g-pad*2);
+      ctx.lineWidth=g/32;
+      ctx.strokeStyle="rgb("+colorR+","+colorG+","+colorB+")";
+      ctx.strokeRect(uiObj[u]['l']*g+pad, uiObj[u]['t']*g+pad, uiObj[u]['w']*g-pad*2, uiObj[u]['h']*g-pad*2);
+      }
+    ctx.textBaseline="middle";
+    ctx.fillStyle="rgb("+colorR+","+colorG+","+colorB+")";
+    ctx.strokeStyle="rgb("+colorR+","+colorG+","+colorB+")";
+    if(uiObj[u]['h']==1){//horizontal field
+        ctx.textAlign="right";
+        ctx.font=valueFontPx+"px avantbook";
+        ctx.fillText(value, uiObj[u]['r']*g-g*.2, uiObj[u]['t']*g+uiObj[u]['h']*g/2);
+        if(prog>0){//embolden
+          ctx.lineWidth=prog*g/32;
+          ctx.strokeText(value, uiObj[u]['r']*g-g*.2, uiObj[u]['t']*g+uiObj[u]['h']*g/2);
+          }
+        ctx.textAlign="left";//label
+        ctx.font=labelFontPx+"px avantbook";
+        ctx.fillText(uiObj[u]['label'], uiObj[u]['l']*g+g*.2, uiObj[u]['t']*g+g/2, uiObj[u]['w']*g);
+      }
+    else{//vertical field
+      var c=uiObj[u]['l']/2+uiObj[u]['r']/2;
+      ctx.textAlign="center";
+      ctx.font=valueFontPx+"px avantbook";
+      var finding=false;
+      if(uiFocus>-1){
+        //if(uiObj[uiFocus]['id']=="findInput"){finding=true;}
+        }
+      //dbug('finding='+finding);
+      if((uiObj[u]['id']=="metaDisplay")&&(finding)){
+        ctx.font=labelFontPx+"px avantbook";
+        wrapText(ctx, uiObj[u]['label'], c*g, uiObj[u]['t']*g+g/2, uiObj[u]['w']*g, labelLinePx, false);
+        drawResultButtons();
+        }
+      else{
+        wrapText(ctx, ""+value, c*g, uiObj[u]['t']*g+g*1.5, uiObj[u]['w']*g, valueLinePx, false);
+        if(prog>0){//embolden
+          ctx.lineWidth=prog*g/32;
+          wrapText(ctx, value, c*g, uiObj[u]['t']*g+g*1.5, uiObj[u]['w']*g, valueLinePx, true);
+          }
+        ctx.font=labelFontPx+"px avantbook";
+        wrapText(ctx, uiObj[u]['label'], c*g, uiObj[u]['t']*g+g/2, uiObj[u]['w']*g, labelLinePx, false);
+        }
+      }
+    }
+  }
+var lorem="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
+var imageDensity=1;
+var jpgQuality=1;
+var summaryGrid=40;//px
+var summaryDown=30;
+var summaryAcross=24;
+var summaryWidth=summaryAcross*summaryGrid;
+var summaryHeight=summaryDown*summaryGrid;
+var summaryAspect=summaryAcross/summaryDown;
+var reportGrid=20;//px
+var reportDown=50;
+var reportAcross=40;
+var reportWidth=reportAcross*reportGrid;
+var reportHeight=reportDown*reportGrid;
+var reportAspect=reportAcross/reportDown;
+var labelX=reportGrid*2;
+var labelWidth=reportGrid*9;
+var valueX=reportGrid*14;
+var valueWidth=reportGrid*4;
+var metaX=reportGrid*16;
+var metaWidth=reportGrid*22;
+
+
+
+
+var spaceSprocket="";
+
+function createForm(){
+  for(var u=0; u<uiObj.length; u++){
+    if(uiObj[u].id.indexOf("Input")>-1){
+      createInput("formHolder", uiObj[u].id, g, uiObj[u].l,uiObj[u].t,uiObj[u].w,uiObj[u].h);
+      }
+    }
+  }
+//       {"x":0, "y":0, "w":28, "h":2, "l":0, "r":0, "t":0, "b":0, "type":"input", "func":"clearSearch()", "value":"search input"},
+function createSearch(){
+  //dbug('createSearch()');
+  console.log(menus.search.panes[0].contents[0]);
+  createInput("menuHolder", "searchInput", 10, -1,-1,1,1);
+  }
+
+function createInput(parentId, id, grid, x,y,across,down){
+  var input = document.createElement("input");
+  if(id=="emailInput"){  input.type = "email";}
+  else if(id=="phoneInput"){  input.type = "tel";}
+  else if(id=="birthdayInput"){  input.type = "tel";}
+  else{input.type = "text";}
+  input.setAttribute("autocomplete", "off");
+  input.setAttribute("autocorrect", "off");
+  input.setAttribute("autocapitalize", "off");
+  input.id = id;
+  input.className = "textInput";
+  input.style.left=x*grid+"px";
+  input.style.top=(y*grid+yOffset)+"px";
+  input.style.width=across*grid+"px";
+  input.style.height=down*grid+"px";
+  var container=document.getElementById(parentId);
+  container.appendChild(input);
+  input.addEventListener("blur", inputOnBlur, false);
+  input.addEventListener("focus", inputOnFocus, false);
+  input.addEventListener("keydown", inputOnKeyDown, false);
+  input.addEventListener("change", inputOnChange, false);
+  input.addEventListener("keyup", inputOnKeyUp, false);
+  }
+function repositionInputs(){
+  for (var u=1; u<uiObj.length; u++){// skip meta area
+    var id=uiObj[u].id;
+    if(id.indexOf("Input") > -1){
+      //dbuga('id');
+      //document.getElementById(id).style.backgroundColor="red";
+      //document.getElementById(id).style.opacity="1";
+      document.getElementById(id).style.top=(uiObj[u].t*g+yOffset)+"px";
+      }
+    }
+  }
+function inputOnBlur(event){
+  //dbuga("inputOnBlur "+event.target.id);
+  }
+function inputOnFocus(event){
+  dbuga("inputOnFocus "+event.target.id);
+  repositionInputs();
+  spaceSprocket="";
+  if(event.target.id=="searchInput"){
+    searchOnFocus(event);
+    }
+  else{
+    //dbug("inputOnFocus "+event.target.id);
+    for (var u=1; u<uiObj.length; u++){// skip meta area
+      if(uiObj[u].id==event.target.id){
+        allSelecting=true;
+        setUiFocus(u);
+        document.getElementById(uiObj[u].id).value="";
+        document.getElementById(uiObj[u].id).style.top="-1000px";
+        event.target.value="";
+        //uiObj[u].value=""; // don't clear the data
+        }
+      }
+    //dbuga(' -- uiObj['+uiFocus+'].value:'+uiObj[uiFocus].value);
+    //dbuga(' -- el('+uiObj[uiFocus].id+').value:'+document.getElementById(uiObj[uiFocus].id).value);
+    //dbuga(' -- document.activeElement.value:'+document.activeElement.value);
+    //dbuga(' -- event.target.value:'+event.target.value);
+    redrawAll();
+    }
+  }
+
+function inputOnKeyDown(e){
+  //dbuga('inputOnKeyDown no action');
+  }
+function searchKeyUp(e){
+  //dbuga('searchKeyUp(e)');
+  if((Number(e.keyCode)==13)||(Number(e.keyCode)==9)){
+    searchContacts();
+    }
+  else{
+    menus["search"].panes[0].contents[0].value=e.target.value;
+    rui.drawUx();
+    }
+  }
+function searchOnFocus(e){
+  dbuga('searchOnFocus(e)');
+              var el=document.getElementById('searchInput');
+              el.style.top="-1000px";
+  //el.style.backgroundColor="red";
+  }
+
+
+function inputOnKeyUp(e){
+  if(e.target.id=="searchInput"){
+    searchKeyUp(e);
+    }
+  else{
+    var id=uiObj[uiFocus].id;
+    //dbuga('keyUpTextField <b>e.keyCode:'+e.keyCode+'</b>');
+    //dbuga(' - e.target.value:'+e.target.value);
+    //dbuga(' - id:'+id+' value:'+document.getElementById(id).value);
+    //dbuga(' - uiFocus:'+uiFocus+' uiObj[uiFocus].value:'+  uiObj[uiFocus].value);
+
+    if((Number(e.keyCode)==13)||(Number(e.keyCode)==9)){//enter go
+      if(Number(e.keyCode)==13){
+        document.getElementById(uiObj[uiFocus+1].id).focus();
+        redrawAll();
+        }
+      else{
+        //dbuga(' - 9 is tab');
+        redrawAll();
+        }
+      }
+    else{
+      spaceSprocket=e.target.value;
+      //dbuga(' - PRE uiObj['+uiFocus+'].value:'+uiObj[uiFocus].value);
+      inputValueToUiObj();
+      //dbuga(' - POST uiObj['+uiFocus+'].value:'+uiObj[uiFocus].value);
+      }
+    }
+  }
+
+function inputOnChange (e) {
+  //dbuga('inputOnChange no action '+e.target.id+" value:"+e.target.value);
+  }
+
+var allSelecting=false;
+
+function inputValueToUiObj(){
+  //dbuga('inputValueToUiObj() uiFocus:'+uiFocus);
+  if(uiFocus == -1){return false;} // no selection
+  var id=uiObj[uiFocus].id;
+  //dbuga(' - id:'+id);
+  if(id.indexOf("Input") == -1){return false;} // not input
+
+
+  var fieldType=uiObj[uiFocus].type;
+  //var raw=document.getElementById(id).value;
+  var raw=spaceSprocket;
+  //dbuga(' - el.value:'+document.getElementById(id).value);
+  //dbuga(' - uiObj['+uiFocus+'].value:'+  uiObj[uiFocus].value);
+
+  if(allSelecting){
+    //dbuga('  allSelecting, so what?');
+    }
+  var cleaned="";
+  var parts=raw.split("");
+  for (var c=0; c<parts.length; c++){
+    var char=parts[c];
+    var type="";
+    if("abcdefghijklmnopqrstuvwxyz -".indexOf(char)>-1){
+      type="alpha";
+      }
+    if("ABCDEFGHIJKLMNOPQRSTUVWXYZ".indexOf(char)>-1){
+      type="alpha";
+      char=char.toLowerCase();
+      }
+    if("0123456789".indexOf(char)>-1){
+      type="numeric";
+      }
+    if("'./=`!@#$%^&*+?_{|}~".indexOf(char)>-1){
+      type="char";
+      }
+    //dbuga(type+" "+char);
+    if((char != "")){// valid entry
+      if(uiFocus==1){firstChanged=true;}
+      if(uiFocus==2){middleChanged=true;}
+      if(uiFocus==3){lastChanged=true;}
+      if(uiFocus==4){currentChanged=true;}
+      if((uiFocus==1)||(uiFocus==2)||(uiFocus==3)){
+        if(char==" "){char="-";}// replace spaces with hyphen in birth name fields
+        }
+      if(fieldType.indexOf(type)>-1){// valid
+        if(cleaned.length<uiObj[uiFocus].limit){
+          cleaned+=char;
+          }
+        }
+      }
+    }
+  uiObj[uiFocus].value=cleaned;
+  document.getElementById(id).value=cleaned;
+  //dbuga('inputValueToUiObj() completed so userInput()');
+  userInput();
+  redrawAll();
+  }
+
+
+
+
+
+function clearSearch(){
+  dbuga('clearSearch()');
+  //focusTextarea();
+  searchTyping=false;
+  menus['search'].panes[0].contents[0].value='';
+  menus['search'].panes[0].selection=-1;
+  menus['search'].panes[1].selection=-1;
+  menus['search'].panes[2].selection=-1;
+  document.getElementById('searchInput').value="";
+
+  rui.drawUx();
+  //// why was this ever here?
+  //// rui.toggleMenu('search', 'clearSearch');
+  ////hideKeyboard();
+    document.getElementById('searchInput').focus();
+
+  }
+function searchDown(e){
+  dbuga('searchDown '+e.keyCode+' searchTyping='+searchTyping);
+    if(e.keyCode==8){// delete
+      e.preventDefault();
+      if(searchTyping==false){
+        menus["search"].panes[0].contents[0].value="";
+        searchTyping=true;
+        }
+      else{
+        var str=menus["search"].panes[0].contents[0].value;
+        var parts=str.split("");
+        if(parts.length>0){
+          var junk=parts.pop();
+          }
+        menus["search"].panes[0].contents[0].value=parts.join('');
+        }
+      rui.drawUx();
+      }
+    if(e.keyCode==9){//tab?
+      e.preventDefault();
+      //setUiFocus((uiFocus+1)%uiObj.length);
+      }
+    if(e.keyCode==13){//cr
+      e.preventDefault();
+      searchContacts();
+      }
+  }
+
+
+
+
+
+
+function blankContext(ctx, color, grid, across, down){
+  //dbuga('blankContext');
+
+  ctx.fillStyle="white";
+  ctx.fillRect(0,0,grid*across, grid*down);
+  ctx.strokeStyle=color;
+  ctx.lineWidth=grid/24;
+  ctx.beginPath();
+  for (var x=0; x<=across; x++){
+    ctx.moveTo(x*grid, 0);
+    ctx.lineTo(x*grid, down*grid);
+    }
+  for (var y=0; y<=down; y++){
+    ctx.moveTo(0, y*grid);
+    ctx.lineTo(across*grid, y*grid);
+    }
+  ctx.stroke();
+  }
+function footerToContext(ctx, page){
+          ctx.fillStyle="black";
+          ctx.font=reportGrid*.8+"px avantbook";
+          ctx.textAlign="left";
+          wrapText(ctx, "© 2016 Wes Hamilton", reportGrid*1, reportHeight-reportGrid*2, reportGrid*16, reportGrid, false);
+          wrapText(ctx, "wes@weshamilton.com", reportGrid*1, reportHeight-reportGrid*1, reportGrid*16, reportGrid, false);
+          ctx.textAlign="right";
+          wrapText(ctx, "whatsmydestiny.com", reportWidth-reportGrid*1, reportHeight-reportGrid*2, reportGrid*16, reportGrid, false);
+          wrapText(ctx, "Powered by pixiedustapps.com", reportWidth-reportGrid*1, reportHeight-reportGrid*1, reportGrid*16, reportGrid, false);
+          rCtx.textAlign="center";
+          wrapText(ctx, page+"", reportWidth/2, reportHeight-reportGrid*1, reportGrid*8, reportGrid, false);
+  }
+function metadataReport(){
+  var atPage=1
+  rCanv.height=reportHeight;
+  rCanv.width=reportWidth;
+  rCtx.fillStyle="white";
+  rCtx.fillRect(0,0,reportWidth, reportHeight);
+  var firstCell=2.5;
+  var pdfGrid=7.5;
+  var pdfAcross=26;
+  var pdfDown=pdfAcross/reportAspect;
+  var pdfPad=1.25;
+
+  var doc = new jsPDF('p', 'mm', [198,254]);
+  rCanv.style.display="block";
+  blankContext(rCtx, "#fff", reportGrid, reportAcross, reportDown);
+  var coverAspect=2044/1534;
+  var img=document.getElementById("coversheet");
+  rCtx.drawImage(img,0,reportGrid*firstCell,reportWidth, reportWidth/coverAspect);
+  var textTop=reportGrid*firstCell*2+reportWidth/coverAspect
+  rCtx.fillStyle="black";
+  rCtx.font=reportGrid*1.2+"px avantbold";
+  rCtx.textAlign="center";
+  var subject=titleCase(reading.firstNameInput+" "+reading.middleNameInput+" "+reading.lastNameInput);
+  wrapText(rCtx, subject, reportWidth/2, textTop+reportGrid*3.5, reportWidth, reportGrid*2, false);
+  rCtx.font=reportGrid*1+"px avantbook";
+  var birthday="Birthday: "+Number(reading.birthMM)+"-"+Number(reading.birthDD)+"-"+Number(reading.birthYYYY);
+  wrapText(rCtx, birthday, reportWidth/2, textTop+reportGrid*5.5, reportWidth, reportGrid*2, false);
+  var dateString="Printed: "+reading.globalMonth+"/"+reading.globalDay+"/"+reading.globalYear+" - Age "+reading.ageInYears;
+  wrapText(rCtx, dateString, reportWidth/2, textTop+reportGrid*7.5, reportWidth, reportGrid*2, false);
+  footerToContext(rCtx, "");
+  var data = rCanv.toDataURL('image/jpeg', jpgQuality).slice('data:image/jpeg;base64,'.length);
+  // Convert the data to binary form
+  var imgData = atob(data);
+  doc.addImage(imgData, 'JPEG', pdfPad*pdfGrid, pdfPad*pdfGrid, (pdfAcross-pdfPad*2)*pdfGrid, (pdfDown-pdfPad*2)*pdfGrid);
+  doc.addPage();
+  blankContext(rCtx, "#fff", reportGrid, reportAcross, reportDown);
+  rCtx.textBaseline="middle";
+  var atY=reportGrid*firstCell;// start at first cell
+  var uArray=[];
+  var metaKeys=Object.keys(metaByFieldValue);
+  for(var m=0; m<metaKeys.length; m++){
+    rCtx.fillStyle="black";
+    var thisKey=metaKeys[m];
+    var thisMeta=metaByFieldValue[thisKey];
+    var thisUi=-1;
+    for (var u=0; u<uiObj.length; u++){
+      if(uiObj[u]['id']==metaKeys[m]){thisUi=u;}
+      }
+    if((thisKey=="firstAge")||(thisKey=="firstLabel")){
+      //dbuga("key:"+thisKey+"  ui:"+thisUi+" value:"+uiObj[thisUi]['value']);
+      }
+    if(thisUi>-1){
+      //console.log('uiObj[thisUi][label]='+uiObj[thisUi]['label']);
+      rCtx.font=reportGrid*.7+"px avantbold";
+      var labelHeight=wrapTest(rCtx, thisMeta['label'], 0, 0, labelWidth, reportGrid, false);
+      var maxHeight=labelHeight;
+      var metaHeight=0;
+      var valueString=uiObj[thisUi]['value'];
+      if(thisKey=="firstAge"){valueString="";}
+      if(inArray(valueString, Object.keys(thisMeta))){
+        var metaString=thisMeta[valueString];
+        if((valueString.indexOf("/")>0)&&(metaString=="")){
+          var value=unmaster(valueString);
+          if(inArray(value, Object.keys(thisMeta))){
+            metaString=thisMeta[value];
+            }
+          }
+        rCtx.font=reportGrid*.8+"px avantbook";
+        metaHeight=wrapTest(rCtx, metaString, 0, 0, metaWidth, reportGrid, false);
+        if(metaHeight>maxHeight){maxHeight=metaHeight;}
+        //console.log("maxHeight "+maxHeight +" metaHeight: " +metaHeight +" labelHeight="+labelHeight);
+        if(((maxHeight+atY)>reportHeight)||(thisKey=="physicalPlane")||(thisKey=="firstLabel")||(thisKey=="thirdLabel")||(thisKey=="count1")){
+          atY=reportGrid*firstCell;
+          atPage++;
+          footerToContext(rCtx, atPage);
+          var data = rCanv.toDataURL('image/jpeg', jpgQuality).slice('data:image/jpeg;base64,'.length);
+          // Convert the data to binary form
+          var imgData = atob(data);
+          doc.addImage(imgData, 'JPEG', pdfPad*pdfGrid, pdfPad*pdfGrid, (pdfAcross-pdfPad*2)*pdfGrid, (pdfDown-pdfPad*2)*pdfGrid);
+          doc.addPage();
+          blankContext(rCtx, "#fff", reportGrid, reportAcross, reportDown);
+          if(thisKey=="count1"){
+            rCtx.fillStyle="black";
+            rCtx.font=reportGrid*.8+"px avantbold";
+            rCtx.textAlign="left";
+            wrapText(rCtx, "Distribution of Numbers in Name", labelX, atY, labelWidth*5, reportGrid, false);
+            atY+=maxHeight+reportGrid;
+            wrapText(rCtx, "Number", labelX, atY, labelWidth, reportGrid, false);
+            rCtx.textAlign="right";
+            wrapText(rCtx, "Occurences", valueX, atY, valueWidth, reportGrid, false);
+            rCtx.textAlign="left";
+            rCtx.font=reportGrid*.8+"px avantbold";
+            wrapText(rCtx, "Insight", metaX, atY, metaWidth, reportGrid, false);
+            atY+=maxHeight+reportGrid;
+            }
+          }
+        var labelString=thisMeta['label'];
+        if(thisKey=="firstLabel"){
+          for (var u=0; u<uiObj.length; u++){
+            if(uiObj[u]['id']=="firstAge"){
+              //dbuga('first age label= '+uiObj[u].label);
+              valueString=uiObj[u].label;
+              //labelString+=" - ends "+uiObj[u].value;
+              }
+            }
+          }
+        if(thisKey=="secondLabel"){
+          for (var u=0; u<uiObj.length; u++){
+            if(uiObj[u]['id']=="secondAge"){
+              //dbuga('first age label= '+uiObj[u].label);
+              valueString=uiObj[u].label;
+              //labelString+=" - ends "+uiObj[u].value;
+              }
+            }
+          }
+        if(thisKey=="thirdLabel"){
+          for (var u=0; u<uiObj.length; u++){
+            if(uiObj[u]['id']=="thirdAge"){
+              valueString=uiObj[u].label;
+              //labelString+=" - ends "+uiObj[u].value;
+              }
+            }
+          }
+        if(thisKey=="fourthLabel"){
+          for (var u=0; u<uiObj.length; u++){
+            if(uiObj[u]['id']=="fourthAge"){
+              valueString=uiObj[u].label;
+              }
+            }
+          }
+        rCtx.fillStyle="black";
+        rCtx.font=reportGrid*.8+"px avantbold";
+        if((thisKey=="firstLabel")||(thisKey=="secondLabel")||(thisKey=="thirdLabel")||(thisKey=="fourthLabel")){
+          rCtx.font=reportGrid*.9+"px avantbolditalic";
+          }
+        if((thisKey=="secondLabel")||(thisKey=="fourthLabel")){atY+=reportGrid;}
+        rCtx.textAlign="left";
+        wrapText(rCtx, labelString, labelX, atY, labelWidth, reportGrid, false);
+        rCtx.textAlign="right";
+        wrapText(rCtx, valueString, valueX, atY, valueWidth, reportGrid, false);
+        rCtx.textAlign="left";
+        rCtx.font=reportGrid*.8+"px avantbook";
+        //console.log(m+ "atY="+atY+" "+thisMeta['label']);
+        wrapText(rCtx, metaString, metaX, atY, metaWidth, reportGrid, false);
+        //console.log(" then atY="+atY+" "+thisMeta['label']);
+        atY+=maxHeight+reportGrid;
+        //console.log(" and then atY="+atY+" "+thisMeta['label']);
+        }
+      }
+    }
+          atPage++;
+          footerToContext(rCtx, atPage);
+          var data = rCanv.toDataURL('image/jpeg', jpgQuality).slice('data:image/jpeg;base64,'.length);
+          // Convert the data to binary form
+          var imgData = atob(data);
+          doc.addImage(imgData, 'JPEG', pdfPad*pdfGrid, pdfPad*pdfGrid, (pdfAcross-pdfPad*2)*pdfGrid, (pdfDown-pdfPad*2)*pdfGrid);
+  var cleaned=""+reading.firstNameInput+" "+reading.middleNameInput+" "+reading.lastNameInput;
+  cleaned=cleaned.replace(/([^a-z0-9]+)/gi, '-');
+  document.getElementById('spinner').style.display="none";
+
+  pdfToMethod(doc, cleaned+'_'+'metadata');
+  }
+function datasheetReport(){
+  var data = canv.toDataURL('image/jpeg', jpgQuality).slice('data:image/jpeg;base64,'.length);
+  // Convert the data to binary form
+  var imgData = atob(data);
+  var doc = new jsPDF('l', 'mm', [198,254]);
+  var pdfGrid=8.5;
+  var pdfAcross=32;
+  var pdfDown=24;
+  var pdfPad=1.25;
+  doc.addImage(imgData, 'JPEG', pdfPad*pdfGrid, pdfPad*pdfGrid, (pdfAcross-pdfPad*2)*pdfGrid, (pdfDown-pdfPad*2)*pdfGrid);
+  //hideButtons=false;
+  var cleaned=""+reading.firstNameInput+" "+reading.middleNameInput+" "+reading.lastNameInput;
+  cleaned=cleaned.replace(/([^a-z0-9]+)/gi, '-');
+  document.getElementById('spinner').style.display="none";
+
+  pdfToMethod(doc, cleaned+'_'+'datasheet');
+  }
+function summaryReport(){
+  rCanv.height=summaryHeight;
+  rCanv.width=summaryWidth;
+  var s=summaryGrid;
+  rCtx.fillStyle="yellow";
+  rCtx.fillRect(0,0,summaryWidth, summaryHeight);
+  var firstCell=2.5;
+  var pdfGrid=7.5;
+  var pdfAcross=26;
+  var pdfDown=pdfAcross/summaryAspect;
+  var pdfPad=1.25;
+  var doc = new jsPDF('p', 'mm', [198,254]);
+  rCanv.style.display="block";
+  blankContext(rCtx, "#fff", summaryGrid, summaryAcross, summaryDown);
+  for (var f=0; f<summaryFields.length; f++){
+    field=summaryFields[f];
+    var h=.5;
+    var fontPx=s/2.25;
+    var fontFace="avantbook";
+    if(field.type.indexOf("bold")>-1){fontFace="avantbold";}
+    if(field.type=="heading"){
+      h=1;
+      fontPx=s;
+      }
+    var content=field.content;
+    if(field.type=="value"){
+      //console.log(field.type+" "+field.content);
+      content=reading[field.content];
+      }
+    if(field.type=="valueCount"){
+      //console.log(field.type+" "+field.content);
+      content=reading.counts[field.content];
+      }
+    if(field.type.indexOf("calc")>-1){
+      //console.log(field.type+" "+field.content);
+      if(field.content=="karmicArray"){content=reading.karmicArray.join(", ");}
+      if(field.content=="fullName"){content=titleCase(reading.firstNameInput+" "+reading.middleNameInput+" "+reading.lastNameInput);}
+      if(field.content=="bornOn"){content="born on "+readableFormat(reading.birthdayInput);}
+      if(field.content=="printedOn"){content="Printed: "+dateFormat(nowMMDDYYYY())+" - Age "+reading.ageInYears;}
+      }
+    if(field.type.indexOf("meta")>-1){
+      //console.log("field.content="+field.content+" summaryByFieldValue[field.content]=");
+      //console.log(summaryByFieldValue[field.content]);
+      var metas=summaryByFieldValue[field.content];
+      var val=reading[field.content];
+      if(val != "0"){
+        content=metas[""+val];
+        }
+      }
+    rCtx.fillStyle="black";
+    rCtx.textAlign=field.align;
+    rCtx.textBaseline="hanging";
+    var offset=0;
+    if(field.align=="center"){offset=s*field.w/2;}
+    if(field.align=="right"){offset=s*field.w;}
+    rCtx.font=fontPx+"px "+fontFace;
+    rCtx.fillText(content, field.x*s+offset, field.y*s);
+    }
+
+          var data = rCanv.toDataURL('image/jpeg', jpgQuality).slice('data:image/jpeg;base64,'.length);
+          // Convert the data to binary form
+          var imgData = atob(data);
+          doc.addImage(imgData, 'JPEG', pdfPad*pdfGrid, pdfPad*pdfGrid, (pdfAcross-pdfPad*2)*pdfGrid, (pdfDown-pdfPad*2)*pdfGrid);
+  var cleaned=""+reading.firstNameInput+" "+reading.middleNameInput+" "+reading.lastNameInput;
+  cleaned=cleaned.replace(/([^a-z0-9]+)/gi, '-');
+  document.getElementById('spinner').style.display="none";
+  pdfToMethod(doc, cleaned+'_'+'summary');
+  }
+var usePdfMethod="server";
+function pdfToMethod(doc, reportName){
+  //dbuga("pdfToMethod "+reportName);
+  //var defaultMethod=pdfMethod[platform][browser];
+  //if(user.pdfMethod != "default"){usePdfMethod=user.pdfMethod;}
+  if(usePdfMethod=="server"){pdfToServer(doc, reportName);}
+  if(usePdfMethod=="save"){pdfToSave(doc, reportName);}
+  if(usePdfMethod=="open"){pdfToOpen(doc, reportName);}
+  if(usePdfMethod=="div"){pdfToDiv(doc, reportName);}
+  var tapImage="downloadpdf.png";
+  if(usePdfMethod=="save"){tapImage="savepdf.png";}
+  if(usePdfMethod=="open"){tapImage="openpdf.png";}
+  document.getElementById("downloadpdfimg").src="nav/"+tapImage;
+  }
+function pdfToDiv(doc, reportName){
+  var pdfData = doc.output('datauristring');
+  document.getElementById('downloadpdf').style.display="block";
+  var element = document.getElementById('pdfData');
+  element.href = "iospdf.html#" + pdfData;
+  element.target = "reportName";
+  //element.href="javascript:var ref=window.open('data:application/pdf;base64," + pdfData+"', '_system');";
+  }
+function pdfToSave(doc, reportName){
+  //dbuga("pdfToSave "+reportName);
+  doc.save(reportName+'.pdf');
+  }
+function pdfToOpen(doc, reportName){
+  doc.output('dataurlnewwindow');
+  }
+var totalChunks=0;
+var chunkBytes=300000;
+var reportName="";
+var reportFile="";
+function pdfToServer(doc, calling){
+  window.setTimeout("checkInternet()", 1000);
+  reportName=calling;
+  reportFile="http://whatsmydestiny.com/destinyapp/reports/" +reportName+"_"+btoa(reportName)+ ".pdf"
+
+  //console.log('pdfToServer '+calling+ ' '+reportFile);
+  var pdf=doc.output();
+  chunks=[];
+  while (pdf) {
+    if (pdf.length < chunkBytes) {
+      chunks.push(pdf);
+      break;
+      }
+    else {
+      chunks.push(pdf.substr(0, chunkBytes));
+      pdf = pdf.substr(chunkBytes);
+      }
+    }
+  //dbuga("pdfToServer *** chunks.length="+chunks.length);
+  document.getElementById('uploadingpercent').innerHTML="0%";
+  document.getElementById('uploadingpdf').style.display="block";
+  totalChunks=chunks.length;
+  saveChunk();
+  }
+
+
+function checkInternet(){
+  var xhr = new  XMLHttpRequest;
+  var status;
+  xhr.open( "HEAD", 'http://www.whatsmydestiny.com/wp-content/uploads/1.gif', false );
+  try {
+    xhr.send();
+    //dbuga('checkInternet() passed');
+  } catch (error) {
+    //dbuga('checkInternet() error');
+    alert('Unable to reach internet. Please check your connection and try agin.');
+    document.getElementById('uploadingpdf').style.display="none";
+    rCanv.style.display="none";
+    chunks=[];
+    //dbuga('checkInternet() error completed');
+  }
+}
+function ajaxError(){
+
+    //dbuga('ajaxError()');
+    alert('ajaxError() Unable to reach server. Please check your connection and try agin.');
+    document.getElementById('uploadingpdf').style.display="none";
+    chunks=[];
+}
+function saveChunk(){
+  var chunkNum=totalChunks-chunks.length;
+  //console.log("saveChunk chunks.length="+chunks.length+" chunkNum="+chunkNum+" reportName="+reportName);
+  var chunk=chunks.shift();
+  var aChunk=btoa(chunk);
+  //console.log("aChunk.length="+aChunk.length);
+  var data = new FormData();
+  data.append("chunkNum", chunkNum);
+  data.append("reportName", reportName);
+  data.append("pdfData", aChunk);
+
+  var xhr = new XMLHttpRequest();
+  xhr.onload = ajaxSuccess;
+  xhr.open( 'post', 'http://www.whatsmydestiny.com/destinyapp/uploadpdf.php', true );
+  xhr.send(data);
+  }
+function ajaxSuccess(){
+  //dbuga('ajaxSuccess()');
+  if(chunks.length>0){
+    var prog=(totalChunks-chunks.length)/totalChunks;
+    document.getElementById('uploadingpercent').innerHTML=Math.floor(prog*100)+"%";
+    window.setTimeout("saveChunk()", 200);
+    }
+  else{
+    //dbuga('pdfToServer completed '+reportFile);
+    document.getElementById('downloadpdf').style.display="block";
+    document.getElementById('uploadingpdf').style.display="none";
+    var element = document.getElementById('pdfData');
+    element.href = "javascript:openPdfFile(); ";
+    element.target = "";
+    rCanv.style.display="none";
+    }
+  }
+function openPdfFile(){
+  //console.log('openPdfFile()');
+  document.getElementById('downloadpdf').style.display="none";
+  //console.log('openPdfFile() hid');
+    resumeOpenPdfFile();
+  }
+function resumeOpenPdfFile(){
+  //console.log('resumeOpenPdfFile() ');
+  //console.log(""+reportFile);
+  window.open(""+reportFile, "_system");
+  //console.log('resumeOpenPdfFile() done');
+  }
+function hidePreview(){
+  document.getElementById('previewCanvas').style.display="none";
+  }
+function handleEvent(evt){
+  if(aboutUp){
+    console.log('about up so ignore event')
+    return false;
+    }
+  dbuga("handleEvent "+evt.type+" "+evt.source);
+  evt.y-=yOffset;
+  var found=-1;
+  for (var u=1; u<uiObj.length; u++){// skip stupid meta area
+    if((evt.x>uiObj[u]['l']*g)&&(evt.x<uiObj[u]['r']*g)&&(evt.y>uiObj[u]['t']*g)&&(evt.y<uiObj[u]['b']*g)){
+      found=u;
+      }
+    }
+  if(found>-1){
+    if(found>3){
+      //hideSave()
+      }
+    //dbuga(uiObj[found]['label']);
+    if(uiFocus==found){
+      //dbuga(uiObj[found]['label']+" set to -1");
+      setUiFocus(-1);
+      }
+    else{setUiFocus(found);}
+    }
+  }
+function clearReading(){
+  dbuga('clearReading() so clearCalcs update values and drawUi');
+  firstChanged=false;
+  middleChanged=false;
+  lastChanged=false;
+  currentChanged=false;
+  selectedContactId=-1;
+  updateIdValue("firstNameInput", "");
+  updateIdValue("middleNameInput", "");
+  updateIdValue("lastNameInput", "");
+  updateIdValue("birthdayInput", "");
+  updateIdValue("currentNameInput", "");
+  updateIdValue("emailInput", "");
+  updateIdValue("phoneInput", "");
+  //updateIdValue("findInput", "");
+  clearCalcs();
+  localStorage.setItem("reading", JSON.stringify(reading));
+  //dbuga("clearReading completed reading keys length: "+Object.keys(reading).length);
+  updateValues();
+  drawUi();
+  dbuga('clear completed');
+  }
+var focusStep=1;
+function geometry(){
+    //dbuga('geometry()');
+    viewportWidth = window.innerWidth;
+    viewportHeight = window.innerHeight;
+    canv.width=viewportWidth;
+    canv.height=viewportHeight;
+    canv.style.display="block";
+    rCanv.style.height=viewportHeight+"px";
+    rCanv.style.width=viewportHeight*reportAspect+"px";
+    rCanv.style.left="-"+viewportHeight*reportAspect+"px";
+    g=viewportHeight/cellsDown;
+    var dialogW=10*g;
+    var dialogH=6*g;
+    var dialogL=11*g;
+    var dialogT=9*g;
+    var style = document.createElement('style');
+    style.type = 'text/css';
+    style.innerHTML ='';
+    style.innerHTML += '#uploadingpercent, #uploadingpdf, #downloadpdf, #spinner{padding:0px; width:'+dialogW+'px; height:'+dialogH+'px; left:'+dialogL+'px; top:'+dialogT+'px; position:absolute; }';
+    style.innerHTML += '.dialogimage, #downloadpdfimg {padding:0px; width:'+dialogW+'px; height:'+dialogH+'px; left:'+0+'px; top:'+0+'px; position:absolute; }';
+    style.innerHTML += '#uploadingpercent{padding:0px; width:'+dialogW+'px; height:'+dialogH+'px; left:'+0+'px; top:'+0+g*3+'px; text-align:center; position:absolute; font-size:'+g+'+px; font-family:avantbold;}';
+    style.innerHTML += 'h1{padding:'+viewportWidth*1/64+'px; width:'+viewportWidth*14/32+'px; background-color:#be792b; text-align:center; font-size:'+viewportWidth*1/32+'+px; font-family:avantbold;}';
+    style.innerHTML += 'p{padding:'+viewportWidth*1/64+'px; width:'+viewportWidth*27/64+'px; text-align:left; font-size:'+viewportWidth*1/32+'+px; font-family:avantbook;}';
+    style.innerHTML += '.col{margin-left:'+viewportWidth*1/64+'px; margin-top:'+viewportHeight*1/64+'px; width:'+viewportWidth/32*15+'px; height:'+Math.floor(viewportHeight*60/64)+'px; background-color:#e8e8e8; float:left;}';
+    style.innerHTML += '.landscape{margin-top:'+viewportWidth*1/64+'px;width:'+viewportWidth/32*15+'px;}';
+    style.innerHTML += '.closer{background-image:url(icons/red/x.png); background-size:contain; background-repeat:no-repeat; background-position: 50% 50%; width:'+viewportWidth*3/64+'px; top:'+viewportHeight*0/64+'px; height:'+viewportWidth*3/64+'px; border-radius:'+viewportWidth*1.5/64+'px; background-color:#f1f1f1; position:fixed; right:'+viewportHeight*1/64+'px; display:block;}';
+    //console.log('updating style '+viewportWidth/32*15);
+
+//#pdfData
+    document.getElementsByTagName('head')[0].appendChild(style);
+    //cellsAcross=Math.floor(viewportWidth/g);
+  redrawAll();
+  }
+function secondTick(){
+  //dbug("fps:"+frames);
+  //dbuga(viewportWidth +' != '+window.innerWidth+' or '+viewportHeight +' != '+window.innerHeight);
+  frames=0;
+  if((viewportWidth == window.innerWidth)&&(viewportHeight > window.innerHeight)){
+    //dbuga(' geometry false resize cancelled.');
+    return false;
+    }
+  if((viewportWidth != window.innerWidth)||(viewportHeight != window.innerHeight)){
+    geometry();
+    }
+  }
+function inArray(needle, haystack) {
+  for(var i = 0; i < haystack.length; i++) {
+    if(haystack[i] == needle) return true;
+    }
+  return false;
+  }
+var debugging=false;
+
+function dbuga(msg){
+  if(debugging){
+    document.getElementById('debugDiv').style.display="block";
+    document.getElementById('debugDiv').innerHTML+="<br />"+msg;
+    }
+  }
+function dbug(msg){
+  if(debugging){
+    document.getElementById('debugDiv').style.display="block";
+    document.getElementById('debugDiv').innerHTML=""+msg;
+    }
+  }
+function mouseDown(e){
+  //dbuga('mouseDown');
+  e.preventDefault();
+  //var evt={"source":"mousedown", "type":"start", "x":e.clientX, "y":e.clientY};
+  //handleEvent(evt);
+  }
+function touchStart(e){
+  //dbug('touchStart');
+  e.preventDefault();
+  var evt={"source":"touchstart", "type":"start", "x":e.touches[0].clientX, "y":e.touches[0].clientY};
+  handleEvent(evt);
+  }
+var alphabet= "abcdefghijklmnopqrstuvwxyz";
+var valphabet="12345678912345678912345678";
+var valphabetArray=valphabet.split('');
+function sumLetterArray(letterArray){
+  var sum=0;
+  var arr=strToNums(letterArray.join(''));
+  for (var n=0; n<arr.length; n++){
+    sum+=arr[n];
+    }
+  return sum;
+  }
+function strToNums(str){
+  str=str.toLowerCase();
+  var parts=str.split('');
+  var nums=[];
+  for (var p=0; p<parts.length; p++){
+    var part=parts[p];
+    if(alphabet.indexOf(part)>-1){
+      nums.push(Number(valphabetArray[alphabet.indexOf(part)]));
+      }
+    }
+  return nums;
+  }
+function specialize(str, debug){//turns 16 into 16/7 but 31 stays 31
+  var reduced=reduceNumStr(str, debug);
+  if(reduced.indexOf('/')>-1){
+    return reduced;
+    }
+  else{
+    return (""+Number(str));
+    }
+  }
+function reduceNumStr(str, debug){//"04021968"
+  //dbuga("reduceNumStr("+str+", "+debug+") str.length="+str.length+" ");
+  var masterNum="";
+  var karmicNum="";
+  if((str=="11")||(str=="22")||(str=="33")){masterNum=str+"/";}
+  if((str=="13")||(str=="14")||(str=="16")||(str=="19")){karmicNum=str+"/";}
+  var safety=100;
+  while((str.length>1)&&(safety>0)){
+    safety--;
+    var parts=str.split('');
+    var sum=0;
+    for(var p=0; p<parts.length; p++){
+      sum+=Number(parts[p]);
+      }
+    if((sum==11)||(sum==22)||(sum==33)){masterNum=sum+"/";}
+    if((sum==13)||(sum==14)||(sum==16)||(sum==19)){karmicNum=sum+"/";}
+    str=""+sum+"";
+    //console.log(" - "+str+"="+str.length);
+    }
+  if(safety==0){alert(debug+" reduce error str="+str);}
+  return masterNum+karmicNum+str;
+  }
+function unmaster(str){
+  var parts=str.split("/");
+  str=parts.pop();
+  return str;
+  }
+function master(str){
+  var parts=str.split("/");
+  str=parts.shift();
+  return str;
+  }
+function dateFormat(num){
+    if(typeof num=="undefined"){num="";}
+    var parts=num.split('');
+    var pLen=parts.length;
+    for (var p=pLen; p<8; p++){
+      parts.push(" ");
+      }
+    var formatted=parts[0]+parts[1]+"/"+parts[2]+parts[3]+"/"+parts[4]+parts[5]+parts[6]+parts[7];
+    return formatted;
+  }
+function readableFormat(num){
+    if(typeof num=="undefined"){return "";}
+    var parts=num.split('');
+    var pLen=parts.length;
+    for (var p=pLen; p<8; p++){
+      parts.push(" ");
+      }
+    var formatted=monthByMM[parts[0]+parts[1]]+" "+Number(parts[2]+parts[3])+", "+parts[4]+parts[5]+parts[6]+parts[7];
+    return formatted;
+  }
+var monthByMM={"01":"January", "02":"February", "03":"March", "04":"April", "05":"May", "06":"June", "07":"July", "08":"August", "09":"September",  "10":"October", "11":"November", "12":"December"};
+function phoneFormat(num){
+    if(typeof num=="undefined"){num="";}
+    var parts=num.split('');
+    var pLen=parts.length;
+    for (var p=pLen; p<10; p++){
+      parts.push(" ");
+      }
+    var formatted="("+parts[0]+parts[1]+parts[2]+") "+parts[3]+parts[4]+parts[5]+"-"+parts[6]+parts[7]+parts[8]+parts[9];
+    return formatted;
+  }
+function phoneContactFormat(num){
+    if(typeof num=="undefined"){num="";}
+    var parts=num.split('');
+    var pLen=parts.length;
+    for (var p=pLen; p<10; p++){
+      parts.push(" ");
+      }
+    var formatted=""+parts[0]+parts[1]+parts[2]+"-"+parts[3]+parts[4]+parts[5]+"-"+parts[6]+parts[7]+parts[8]+parts[9];
+    return formatted;
+  }
+
+function titleCase(str){
+  var returnParts=[];
+  var parts=str.split("-");
+  for(var p=0; p<parts.length; p++){
+    returnParts.push(titleCaseOnce(parts[p]));
+    }
+  return returnParts.join("-");
+  }
+function titleCaseOnce(str){
+  return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+  }
+var pi=Math.PI;
+//menu funcs and configs
+var yOffset=0;
+var setupComplete=false;
+function updateClientLayout(){
+  //dbuga('updateClientLayout()');
+  yOffset=rui.g*2.5;
+  // called by rui.geometry();
+  //console.log('updateClientLayout()');
+  canv.width=rui.ww;
+  canv.height=rui.wh-yOffset;
+  canv.style.top=yOffset+"px";
+  if(setupComplete==false){
+    createForm();
+    createSearch();
+    setupLocalStorage();
+    setupComplete=true;
+  }
+}
+//include these
+//rui.createRui(sbs, "#5eb8b6", "rgb(255,255,255)", "rgb(0,0,0)", "white", "rgb(185,28,27)");
+//ctx, bar, bg, text, iconset , circle
+//include in touch events
+//if(target=="menu"){rui.menuEvent(type, touches);}
+function searchToggled(){
+  if(menus["search"].selected){
+    document.getElementById('searchInput').focus();
+    //searchTyping=false;
+    //typed=false;
+    //dbuga('searchToggled sets typed to false');
+    //focusTextarea();
+    }
+  else{
+    document.getElementById('searchInput').blur();
+    document.getElementById('searchInput').style.top="-1000px";
+/*
+    if(uiFocus>-1){
+      if(uiObj[uiFocus].id.indexOf("Input")>-1){focusTextarea();}
+      else{hideTextarea();}
+      }
+    else{hideTextarea();}
+*/
+    }
+  }
+var barButtons=[
+{"name":"systemToggle", "func":"rui.toggleMenu('system', 'barButton func')", "selected":false, "float":"left", "labelOn":"menu.png", "labelOff":"menu.png"},
+{"name":"contextToggle", "func":"rui.toggleMenu('context', 'barButton func')", "selected":false, "float":"right", "labelOn":"shortmenu.png", "labelOff":"shortmenu.png"},
+{"name":"searchToggle", "func":"rui.toggleMenu('search', 'barButton func'); searchToggled();", "selected":false, "float":"right", "labelOn":"magnifier.png", "labelOff":"magnifier.png"},
+{"name":"dashboardToggle", "func":"rui.toggleMenu('dashboard', 'barButton func')", "selected":false, "float":"center", "labelOn":"panes.png", "labelOff":"panes.png"}
+];
+var buttonNumByName={};
+for(var b=0; b<barButtons.length; b++){
+  barButtons[b].t=0;
+  barButtons[b].r=0;
+  barButtons[b].b=0;
+  barButtons[b].l=0;
+  buttonNumByName[barButtons[b].name]=b;
+}
+var menuKeys=["dashboard", "search", "system", "context"];
+    //sorts stackers,
+    //stack:0 = auto collapse
+var menus={"system":{"selected":false, "stack":4, "buttonName":"systemToggle", "align":"left", "panes":[
+    {"width":10, "height":14, "left":-5, "top":4, "barColor":"#be792b", "barPad":.5, "grow":1.1, "contents":[
+       {"x":0, "y":0, "w":10, "h":2, "l":0, "r":0, "t":0, "b":0, "type":"icon", "func":"rui.toggleMenu('search', 'menu func'); searchToggled();", "icon":"profile", "label":"contacts"},
+       {"x":0, "y":3, "w":10, "h":2, "l":0, "r":0, "t":0, "b":0, "type":"icon", "func":"openWebsite()", "icon":"www", "label":"website"},
+       {"x":0, "y":6, "w":10, "h":2, "l":0, "r":0, "t":0, "b":0, "type":"icon", "func":"openAbout()", "icon":"i", "label":"about"},
+       {"x":0, "y":9, "w":10, "h":2, "l":0, "r":0, "t":0, "b":0, "type":"icon", "func":"openSupport()", "icon":"questionmark", "label":"support"},
+       {"x":0, "y":12, "w":10, "h":2, "l":0, "r":0, "t":0, "b":0, "type":"icon", "func":"openTutorial()", "icon":"book", "label":"tutorial"}
+      ]}
+    ]
+  },
+  "dashboard":{
+    "selected":false,  "stack":1, "buttonName":"dashboardToggle", "align":"center", "panes":[
+    {"width":42, "height":8, "left":-21, "top":4, "selection":-1, "barColor":"", "barPad":.5, "grow":1.1, "contents":[
+       {"x":0, "y":0, "w":42, "h":2, "l":0, "r":0, "t":0, "b":0, "type":"heading", "text":"Click a field for more info"},
+       {"x":0, "y":2, "w":42, "h":6, "l":0, "r":0, "t":0, "b":0, "type":"paragraph", "text":""}
+      ]}
+    ]
+  },
+  "search":{"selected":false, "stack":2, "buttonName":"searchToggle", "align":"right", "panes":[
+    {"width":31, "height":2, "left":-17, "top":4, "selection":-1, "barColor":"", "barPad":.5, "grow":1.1, "contents":[
+       {"x":0, "y":0, "w":28, "h":2, "l":0, "r":0, "t":0, "b":0, "type":"input", "func":"clearSearch()", "value":"search input"},
+       {"x":28.5, "y":-.5, "w":3, "h":3, "l":0, "r":0, "t":0, "b":0, "type":"iconInvert", "func":"clearSearch()", "icon":"x", "label":""}
+      ]
+    },
+    {"width":2, "height":2, "left":15, "top":4, "selection":-1, "barColor":"", "barPad":.5, "grow":1.1, "contents":[
+       {"x":-.67, "y":-.67, "w":3.36, "h":3.36, "l":0, "r":0, "t":0, "b":0, "type":"iconInvert", "func":"searchContacts()", "icon":"maginverted", "label":""}
+      ]
+    },
+    {"width":34, "height":-1, "left":-17, "top":7, "selection":-1, "barColor":"", "barPad":.5, "grow":1.1, "contents":[
+       {"x":0, "y":0, "w":34, "h":2, "l":0, "r":0, "t":0, "b":0, "type":"template", "text":"a default result", "id":-1, "func":"selectResult"}
+      ]}
+    ]
+  },
+  "context":{"selected":false,  "stack":3, "buttonName":"contextToggle", "align":"right", "panes":[
+    {"width":8, "height":11, "left":-4, "top":4, "selection":-1, "barColor":"#be792b", "barPad":.5, "grow":1.1, "contents":[
+       {"x":0, "y":0, "w":8, "h":2, "l":0, "r":0, "t":0, "b":0, "type":"icon", "func":"menuSave()", "icon":"disk", "label":"save"},
+       {"x":0, "y":3, "w":8, "h":2, "l":0, "r":0, "t":0, "b":0, "type":"icon", "func":"menuClear(); menus['context'].panes[0].selection=-1;", "icon":"blank", "label":"clear"},
+       {"x":0, "y":6, "w":8, "h":2, "l":0, "r":0, "t":0, "b":0, "type":"icon", "func":"metadataReport()", "icon":"pdfdoc", "label":"report"},
+       {"x":0, "y":9, "w":8, "h":2, "l":0, "r":0, "t":0, "b":0, "type":"icon", "func":"summaryReport()", "icon":"pdfdoc", "label":"summary"}
+      ]}
+    ]
+  }
+}
+// end of menu configs
+var selectedContactId=-1;
+var selectedContact={};
+function menuSave(){
+  dbuga('menuSave()');
+  console.log('menuSave()');
+  menus.context.panes[0].selection=-1;
+  attemptSaveContact();
+  rui.toggleMenu('context', 'menuSave');
+  dbuga('menuSave() completed');
+  }
+function menuClear(){
+  clearReading();
+  menus.context.panes[0].selection=-1;
+  rui.toggleMenu('context', 'menuClear');
+  }
+
+function closeAbout(){
+
+  document.getElementById('aboutDiv').scrollTop=0;
+  document.getElementById('aboutDiv').style.display="none";
+  rui.menuFound=-1;
+  aboutUp=false;
+  }
+var aboutUp=false;
+var closeCode='<div class="closer" ontouchend="event.preventDefault(); closeAbout();"></div>';
+function openAbout(){
+  aboutUp=true;
+  // show modal link panel
+  document.getElementById('aboutDiv').style.display="block";
+  document.getElementById('aboutDiv').innerHTML=aboutCode+closeCode;
+  }
+function openTutorial(){
+  aboutUp=true;
+  // show modal link panel
+  document.getElementById('aboutDiv').style.display="block";
+  document.getElementById('aboutDiv').innerHTML=tutorialCode+closeCode;
+  }
+function openSupport(){
+  var ref = window.open("http://www.whatsmydestiny.com/support/", "_system");
+  }
+function openWebsite(){
+  var ref = window.open("http://www.whatsmydestiny.com", "_system");
+  }
+function emailWes(){
+  window.setTimeout("window.open('mailto:wes@weshamilton.com?subject=Request from Whats My Destiny app', '_system')", 100);
+  }
+function successFunction()
+{
+    dbuga("It worked!");
+}
+
+function errorFunction(error)
+{
+    dbuga(error);
+}
+function selectResult(id){
+  dbuga("selectResult "+id);
+  hideKeyboard();
+  rui.closeMenu('search');
+  rui.closeMenu('dashboard');
+  AndroidFullScreen.immersiveMode(successFunction, errorFunction);
+
+  var contact=contactsArray[id];
+  var prettyContact=JSON.stringify(contact).split(",").join(",<br>");
+  dbuga(prettyContact);
+  var frozenContact=JSON.parse(JSON.stringify(contact));
+  dbuga('frozenContact.birthday='+frozenContact.birthday);
+  selectedContactId=contact.id;
+  selectedContact=contact;
+  var contactFirst="";
+  var contactMiddle="";
+  var contactLast="";
+  var contactNickname="";
+  var validParts=[];
+  if(contact.nickname===null){}
+  else{
+    contactNickname=contact.nickname;
+    var nicknameParts=contactNickname.split(" ");
+    for (var p=0; p<nicknameParts.length; p++){
+      if(nicknameParts[p].length>0){validParts.push(nicknameParts[p]);}
+      }
+    }
+  if(contact.name===null){}
+  else{
+    var nameFields=Object.keys(contact.name);
+    if(inArray("givenName", nameFields)){
+      if(contact.name.givenName !== null){
+        contactFirst=contact.name.givenName.replace(/ /g, "-");
+        }
+      else{
+        contactFirst="";
+        }
+      }
+    if(inArray("middleName", nameFields)){
+      if(contact.name.middleName !== null){
+        contactMiddle=contact.name.middleName.replace(/ /g, "-");
+        }
+      else{
+        contactMiddle="";
+        }
+      }
+    if(inArray("familyName", nameFields)){
+      if(contact.name.familyName !== null){
+        contactLast=contact.name.familyName.replace(/ /g, "-");
+        }
+      else{
+        contactLast="";
+        }
+      }
+    }
+  if(validParts.length==3){// valid 3 part nickname
+    updateIdValue("currentNameInput", contactFirst+" "+contactMiddle+" "+contactLast);
+    updateIdValue("firstNameInput", validParts[0]);
+    updateIdValue("middleNameInput", validParts[1]);
+    updateIdValue("lastNameInput", validParts[2]);
+    }
+  else{
+    updateIdValue("currentNameInput", validParts.join(" "));
+    updateIdValue("firstNameInput", contactFirst);
+    updateIdValue("middleNameInput", contactMiddle);
+    updateIdValue("lastNameInput", contactLast);
+    }
+/*
+  if(contact.birthday != ""){
+    dbuga("contact.birthday "+contact.birthday);
+    var birthdayObj=new Date(Number(contact.birthday));
+    var dd=birthdayObj.getDate();
+    if(dd<10){dd="0"+dd;}
+    var mm=birthdayObj.getMonth()+1;
+    if(mm<10){mm="0"+mm;}
+    var yyyy=birthdayObj.getFullYear();
+    contact.birthday=mm+""+dd+""+yyyy;
+    }
+*/
+  dbuga('contact.birthday='+contact.birthday);
+  updateIdValue("birthdayInput", isoToMMDDYYYY(""+frozenContact.birthday));
+  // convert to mmddyyyy
+  if(contact.emails===null){
+    //dbuga('CAUGHT no emails in selectContact('+id+')');
+    contact.emails=[];
+    }
+  if(contact.emails.length>0){updateIdValue("emailInput", contact.emails[0].value);}
+  else{updateIdValue("emailInput", "");}
+  var cleaned="";
+  if(contact.phoneNumbers===null){
+    //dbuga('CAUGHT no emails in selectContact('+id+')');
+    contact.phoneNumbers=[];
+    }
+  if(contact.phoneNumbers.length>0){
+    var value=contact.phoneNumbers[0].value;
+    var parts=value.split('');
+    for (var p=0; p<parts.length; p++){
+      if("0123456789".indexOf(parts[p])>-1){
+        cleaned+=parts[p];
+        }
+      }
+    }
+  updateIdValue("phoneInput", cleaned);
+  userInput();
+  firstChanged=false;
+  middleChanged=false;
+  lastChanged=false;
+  currentChanged=false;
+  ////updateValues();
+  drawUi();
+  }
+function isoToMMDDYYYY(iso){
+  iso=iso+"";
+  var slash="";
+  if(iso.length>9){
+    var isoTen=iso.substring(0,10);
+    var parts=isoTen.split("-");
+    if(parts.length==3){
+      slash=parts[1]+""+parts[2]+""+parts[0];
+      }
+    }
+  dbuga('isoToMMDDYYYY('+iso+') '+slash);
+  return slash;
+  }
+var contactsArray=[];
+function devent(e){
+  //alert(e.target.id)
+  }
+function searchContacts(){
+  menus["search"].panes[0].selection=-1;
+  menus['search'].panes[1].selection=-1;
+  menus['search'].panes[2].selection=-1;
+  rui.drawUx();
+  hideKeyboard();
+  dbuga('searchContacts() menu='+menus["search"].panes[0].contents[0].value+' input='+document.getElementById('searchInput').value);
+  var options      = new ContactFindOptions();
+  options.filter   = menus["search"].panes[0].contents[0].value;
+  options.hasPhoneNumber = true;
+  options.multiple = true;
+  options.desiredFields = [];
+/*
+  var fields = [
+    navigator.contacts.fieldType.displayName,
+    navigator.contacts.fieldType.name,
+    navigator.contacts.fieldType.nickname
+  ];
+*/
+  var fields = ["displayName", "name"];
+  dbuga(' fields.length='+fields.length);
+  navigator.contacts.find(fields, contactsFindSuccess, contactsFindError, options);
+/*
+  var template=menus[menuName].panes[paneNum].contents[0];
+  menus["search"].panes[2].contents=[];
+  menus["search"].panes[2].contents.push(template);
+  menus["search"].panes[2].contents.push(
+ {"x":1, "y":1, "w":42, "h":6, "l":0, "r":0, "t":0, "b":0, "type":"paragraph", "text":"Retrieving contacts, please wait."});
+
+  rui.drawUx();
+*/
+  dbuga('searchContacts() completed');
+  }
+function contactsFindSuccess(contacts){
+  dbuga('contactsFindSuccess');
+  dbuga('Found ' + contacts.length + ' contacts.');
+
+  menus['search'].panes[2].selection=-1;
+  dbuga(JSON.stringify(contacts[0]));
+  contactsArray=[];
+  for (var c=0; c<contacts.length ; c++){
+dbuga('c='+c);
+    if(inArray("name", Object.keys(contacts[c]))){
+dbuga(' passed name');
+      if(inArray("familyName", Object.keys(contacts[c].name))){
+dbuga(' passed familyName');
+        if(inArray("givenName", Object.keys(contacts[c].name))){
+dbuga(' passed givenName');
+          if(contacts[c].name.familyName!=""){
+dbuga(' passed familyName='+contacts[c].name.familyName);
+            if(contacts[c].name.givenName!=""){
+dbuga(' passed givenName='+contacts[c].name.givenName);
+              var contact=contacts[c];
+              if(inArray("middleName", Object.keys(contacts[c].name))==false){
+                contacts[c].name["middleName"]="";
+                }
+              contactsArray.push(contact);
+              }
+            }
+          }
+        }
+      }
+    }
+
+  var results=[];
+  for (var c=0; c<contactsArray.length ; c++){
+    //dbuga(" c="+c);
+
+
+    if(contactsArray[c].nickname===null){contactsArray[c].nickname="";}
+    if(contactsArray[c].name.givenName===null){contactsArray[c].name.givenName="";}
+    if(contactsArray[c].name.middleName===null){contactsArray[c].name.middleName="";}
+    if(contactsArray[c].name.familyName===null){contactsArray[c].name.familyName="";}
+    if(contactsArray[c].birthday===null){contactsArray[c].birthday="";}
+    if(contactsArray[c].emails===null){contactsArray[c].emails=[];}
+    if(contactsArray[c].phoneNumbers===null){contactsArray[c].phoneNumbers=[];}
+
+
+    //dbuga(" - "+c+" OKAY "+contactsArray[c].name.familyName);
+    var name=JSON.stringify(contactsArray[c]);
+    name=name.replace(/\,/g, "<br>");
+    dbuga(name);
+    var nameLabel=""+contactsArray[c].name.givenName+" "+contactsArray[c].name.middleName+" "+contactsArray[c].name.familyName+"";
+
+    if((contactsArray[c].nickname != "")&&(contactsArray[c].nickname != "undefined")){nameLabel+=" - "+contactsArray[c].nickname;}
+
+    results.push(nameLabel);
+  }
+  rui.insertResultsMenuPane(results, "search", 2);
+  dbuga('contactsFindSuccess completed ');
+};
+function contactsFindError(contactError) {
+    alert('onError!');
+};
+function attemptSaveContact(){
+  dbuga('attemptSaveContact() selectedContactId='+selectedContactId);
+  dbuga('  reading.phoneInput:'+reading.phoneInput+' length='+reading.phoneInput.length);
+  dbuga('  valueOfId("phoneInput")='+valueOfId("phoneInput")+' length='+valueOfId("phoneInput").length);
+
+  if(reading.phoneInput.length != 10){
+    alert('Phone number is required to save contact');
+    }
+  else{
+    if(selectedContactId==-1){
+      testDuplicate();
+      }
+    else{saveContact(false);}
+    }
+  }
+var duplicateContact={};
+function testDuplicate(){
+  dbuga('testDuplicate()');
+  var options      = new ContactFindOptions();
+  options.filter   = reading.firstNameInput;
+  options.multiple = true;
+  options.hasPhoneNumber = true;
+  options.desiredFields = [];
+  var fields       = [navigator.contacts.fieldType.displayName, navigator.contacts.fieldType.name, navigator.contacts.fieldType.nickname];
+  navigator.contacts.find(fields, contactsTestSuccess, contactsTestError, options);
+  }
+function contactsTestSuccess(contacts){
+  dbuga('testSuccess Found ' + contacts.length + ' contacts.');
+  contactsArray=contacts;
+  var matchedId=-1;
+  for (var c=0; c<contactsArray.length; c++){
+    //dbuga(" - "+Object.keys(contactsArray[c]).join("|"));
+    if(inArray("name", Object.keys(contactsArray[c]))){
+      //dbuga(" - - "+Object.keys(contactsArray[c].name).join("|"));
+      if(inArray("familyName", Object.keys(contactsArray[c].name))){
+        if (contactsArray[c].name.familyName !== null) {
+          if(inArray("givenName", Object.keys(contactsArray[c].name))){
+            if (contactsArray[c].name.givenName !== null) {
+              if(contactsArray[c].name.familyName.toLowerCase()==reading.lastNameInput){
+                if(contactsArray[c].name.givenName.toLowerCase()==reading.firstNameInput){
+                  matchedId=contactsArray[c].id;
+                  duplicateContact=contactsArray[c];
+                  dbuga("contactsArray[c].name.givenName="+contactsArray[c].name.givenName);
+                  dbuga("contactsArray[c].name.familyName="+contactsArray[c].name.familyName);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  dbuga('matchedId='+matchedId);
+  if(matchedId>-1){
+    var r = confirm("Duplicate found, Update?");
+    if (r == true) {
+      selectedContact=duplicateContact;
+      selectedContactId=matchedId;
+
+      saveContact(true);
+      }
+    }
+  else{
+    saveContact(false);
+    }
+
+  dbuga('completed')
+  }
+function contactsTestError(contactError) {
+    alert('onError!');
+}
+var firstChanged=false;
+var middleChanged=false;
+var lastChanged=false;
+var currentChanged=false;
+function saveContact(update){
+  dbuga("saveContact("+update+") selectedContactId="+selectedContactId);
+  var contact;
+  if(update==false){
+    if(selectedContactId!=-1){
+      if((firstChanged)&&(middleChanged)&&(lastChanged)&&(currentChanged)){
+        dbuga('changed all 4 names so save new contact');
+        selectedContactId=-1;
+        }
+      }
+    }
+  if(selectedContactId==-1){
+    dbuga('create a new contact object');
+    contact = navigator.contacts.create();
+    contact.phoneNumbers=[];
+    contact.emails=[];
+    }
+  else{
+    dbuga('contact=selectedContact');
+    contact=selectedContact;
+    }
+  if(contact.phoneNumbers===null){
+    dbuga('CAUGHT no phones in selectContact('+id+')');
+    contact.phoneNumbers=[];
+    }
+  if(contact.phoneNumbers.length>0){
+    contact.phoneNumbers[0].value=phoneContactFormat(reading.phoneInput);
+    }
+  else{
+    var phoneNumber = new ContactField('home', phoneContactFormat(reading.phoneInput), false);
+    contact.phoneNumbers.push(phoneNumber);
+    }
+  dbuga("contact.emails="+contact.emails.length);
+  if(contact.emails===null){
+    dbuga('CAUGHT no emails in saveContact()');
+    contact.emails=[];
+    }
+  if(contact.emails.length>0){
+    contact.emails[0].value=reading.emailInput;
+    }
+  else{
+    var email = new ContactField('home', reading.emailInput, false);
+    contact.emails.push(email);
+    }
+  // branch if valid 3  part current name
+  var validParts=[];
+
+  var nicknameParts=reading.currentNameInput.split(" ");
+  for (var p=0; p<nicknameParts.length; p++){
+    if(nicknameParts[p].length>0){validParts.push(nicknameParts[p]);}
+    }
+  var name = new ContactName();
+  dbuga("validParts.length="+validParts.length);
+  if(validParts.length==3){// valid 3 part current name, put into contact name f, m, l
+    name.givenName =  titleCase(validParts[0]);
+    name.middleName = titleCase(validParts[1]);
+    name.familyName = titleCase(validParts[2]);
+    var n=titleCase(reading.firstNameInput)+" "+titleCase(reading.middleNameInput)+" "+titleCase(reading.lastNameInput);
+    contact.displayName = n;
+    contact.nickname = n;
+    dbuga("3 parts completed");
+    }
+  else{
+    name.givenName =  titleCase(reading.firstNameInput);
+    name.middleName = titleCase(reading.middleNameInput);
+    name.familyName = titleCase(reading.lastNameInput);
+    dbuga("name.givenName="+name.givenName)
+    dbuga("name.middleName="+name.middleName)
+    dbuga("name.familyName="+name.familyName)
+    var n=titleCase(validParts.join(" "));
+    contact.displayName = n;
+    contact.nickname = n;
+    dbuga("reading to contact completed");
+    }
+  contact.name = name;
+  dbuga('  name='+JSON.stringify(name));
+  //specify both to support all devices // uhoh androids
+  if(reading.birthdayInput.length==8){
+    var bd=reading.birthdayInput;
+    dbuga('4,8:'+bd.substring(4,8)+' 0,2:'+bd.substring(0,2)+' 2,4:'+bd.substring(2,4));
+    var birthDate=new Date(Number(bd.substring(4,8)), Number(bd.substring(0,2)) - 1, Number(bd.substring(2,4)),0,0,0,0);
+    contact.birthday=birthDate;
+    }
+  dbuga('contact.birthday='+contact.birthday);
+  var frozen=JSON.parse(JSON.stringify(contact));
+  dbuga('frozen.birthday='+frozen.birthday);
+  contact.save(contactsSaveSuccess,contactsSaveError);
+  dbuga("  contactsSave completed "+validParts.length);
+  }
+function contactsSaveSuccess(contact) {
+  dbuga("contactsSaveSuccess");
+  clearReading();// prevents double save
+  drawUi();
+  //added july 2nd to prevent out of date search results
+  searchContacts();
+  // end of july 2 edits
+};
+function contactsSaveError(contactError) {
+    alert("Error = " + contactError.code);
+};
+</script>
+<link rel = "stylesheet" type = "text/css" href = "reset.css">
+<style>
+#mainCanvas{background-color:#eeeeee; z-index:2; display:none;}
+#formHolder{position:absolute; z-index:3;}
+.textInput{position:absolute; z-index:; background-color:rgba(0,0,0,0); color:white; opacity:0;}
+#reportCanvas{background-color:#ee9966; z-index:4;}
+#menuHolder{background-color:#ee99ff; z-index:5;}
+@font-face {
+    font-family: 'avantbook';
+    src: url('avantgarde-book.ttf') format('truetype');
+    font-weight:normal;
+    font-style:normal;
+}
+@font-face {
+    font-family: 'avantbold';
+    src: url('avantgarde-bold.ttf') format('truetype');
+    font-weight:normal;
+    font-style:normal;
+}
+@font-face {
+    font-family: 'avantbolditalic';
+    src: url('avantgarde-demi-oblique.ttf') format('truetype');
+    font-weight:normal;
+    font-style:normal;
+}
+</style>
+-->
+</head>
+<body>
+<p>Success!</p>
+<!--
+<body onload="init()" style="background-image:url('res/Default-Landscape.png'); width:100%; height:100%;">
+  <div id="preloadHolder" style="position:absolute; color:rgba(0,0,0,0);">
+    <img src="nav/coversheet.jpg" id="coversheet" width=1 height=1 />
+    <div style="font-family:avantbolditalic; position:absolute; top:-300px;">avantbolditalic 1234567890</div>
+    <div style="font-family:avantbook; position:absolute; top:-250px;">avantbold 1234567890</div>
+    <div style="font-family:avantbold; position:absolute; top:-200px;">aventbook 1234567890</div>
+  </div>
+  <canvas id="mainCanvas" style="position:absolute;" width="1" height="1" ontouchstart="touchStart(event)" onmousedown="mouseDown(event)"
+></canvas>
+  <div id="menuHolder" style="position:absolute;" ></div>
+  <canvas id="reportCanvas" style="position:absolute; display:none;"></canvas>
+  <div id="debugDiv" style="width:400px;font-family:avantbook; position:absolute;  display:none; z-index:5; top:50px; left:0px; background-color:rgba(255,255,255,.85);"></div>
+  <canvas id="previewCanvas" style="display:none; position:absolute;" ontouchstart="hidePreview();"></canvas>
+  <div id="spinner" style="display:none; z-index:8;"><img class="dialogimage" src="nav/please_wait.png"/></div>
+  <div id="downloadpdf" style="display:none; z-index:8;"><a id="pdfData" href=""><img id="downloadpdfimg" src="nav/downloadpdf.png"/></a></div>
+  <div id="uploadingpdf" style="display:none; z-index:8;"><img class="dialogimage" src="nav/uploadingpdf.png"/></a><div id="uploadingpercent">0%</div></div>
+<div id="formHolder"></div>
+<div id="aboutDiv" style="overflow:auto; background-color:rgba(200,200,200,.75); width:100%; height:100%; position:absolute;  z-index:6;  -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px); display:none;">
+</body>
+-->
+</html>
