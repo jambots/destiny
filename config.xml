@@ -2,28 +2,29 @@
     <widget xmlns = "http://www.w3.org/ns/widgets"
         xmlns:gap = "http://phonegap.com/ns/1.0"
         xmlns:android = "http://schemas.android.com/apk/res/android"
-        id        = "com.pixiedustapps.whatsmydestiny"
-        versionCode="14"
-        version   = "2.4">
+        id        = "com.jambots.destiny"
+        versionCode="15"
+        version   = "2.5">
 
     <!-- versionCode is optional and Android only -->
 <preference name="phonegap-version" value="cli-9.0.0" />
 <preference name="android-targetSdkVersion" value="28" />
 <preference name="AndroidPersistentFileLocation" value="Compatibility" />
 <preference name="webviewbounce" value="false" />
-<name>What's My Destiny?</name>
-<description>Wes Hamilton Numerology</description>
+<name>Destiny?</name>
+<description>Numerology</description>
 <gap:platform name="ios" />
 <gap:platform name="android" />
 
 <!-- should be okay -->
+<!--
 <gap:plugin name="cordova-plugin-whitelist" source="npm" />
 <gap:plugin name="cordova-plugin-fullscreen" source="npm" />
 <plugin name="cordova-plugin-inappbrowser" source="npm" />
 <plugin name="cordova-plugin-media" source="npm" spec="1.0.1" />
 <plugin name="cordova-plugin-network-information" source="npm" spec="1.0.1" />
 <plugin name="cordova-plugin-contacts" source="npm" spec="2.2.0" />
-
+-->
 
 <!-- known bad - update
 <plugin name="cordova-plugin-contacts" spec="1.1.0" source="pgb" />
